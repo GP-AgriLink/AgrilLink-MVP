@@ -1,10 +1,11 @@
+// src/controllers/farmerController.js
 const Farmer = require("../models/Farmer.js");
 const generateToken = require("../utils/generateToken.js");
 
 // @desc    Register a new farmer
 // @route   POST /api/farmers/register
 const registerFarmer = async (req, res) => {
-  const { farmName, email, password } = req.body;
+  const { farmName, email, password, specialties } = req.body;
 
   const farmerExists = await Farmer.findOne({ email });
 
@@ -17,6 +18,7 @@ const registerFarmer = async (req, res) => {
     farmName,
     email,
     password,
+    specialties,
   });
 
   if (farmer) {
@@ -24,6 +26,7 @@ const registerFarmer = async (req, res) => {
       _id: farmer._id,
       farmName: farmer.farmName,
       email: farmer.email,
+      specialties: farmer.specialties,
       token: generateToken(farmer._id),
     });
   } else {

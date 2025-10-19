@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 
 const farmerSchema = new mongoose.Schema(
   {
-    // ... (rest of your schema fields like email, farmName, etc.)
     email: { type: String, required: true, unique: true },
     farmName: { type: String, required: true },
     password: { type: String, required: true },
@@ -11,6 +10,7 @@ const farmerSchema = new mongoose.Schema(
       type: { type: String, enum: ["Point"], default: "Point" },
       coordinates: { type: [Number], index: "2dsphere" },
     },
+    specialties: [String],
   },
   {
     timestamps: true,
@@ -26,7 +26,7 @@ farmerSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Method to compare entered password with the hashed password
+// Method to compare entered password
 farmerSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
