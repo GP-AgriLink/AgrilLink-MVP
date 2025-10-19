@@ -1,20 +1,30 @@
+// Import required modules
 const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./src/config/db.js");
 const farmerRoutes = require("./src/routes/farmerRoutes.js");
 
+// Load environment variables from .env file
 dotenv.config();
+
+// Establish the database connection
 connectDB();
 
+// Initialize the Express application
 const app = express();
-app.use(express.json()); // To accept JSON data in the body
 
+// Middleware to parse incoming JSON request bodies
+app.use(express.json());
+
+// --- API Routes ---
+// Mount the farmer-related routes under the '/api/farmers' prefix
+app.use("/api/farmers", farmerRoutes);
+
+// A simple test route to confirm the server is running
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// Use the farmer routes
-app.use("/api/farmers", farmerRoutes);
-
+// --- Server Startup ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, console.log(`Server running on port ${PORT}`));
