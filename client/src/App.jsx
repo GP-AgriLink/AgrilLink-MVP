@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
 import FarmerSignup from './pages/FarmerSignup'
+import FarmerLogin from './pages/FarmerLogin'
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
           } />
           <Route path="/about" element={<h1>About Page</h1>} />
           <Route path="/contact-us" element={<h1>Contact Us Page</h1>} />
-          <Route path="/login" element={<h1>Login Page</h1>} />
+          <Route path="/login" element={<FarmerLogin />} />
           <Route path="/register" element={<FarmerSignup />} />
           <Route path="/for-farmers" element={<h1>For Farmers Page</h1>} />
           <Route path="/cart" element={<h1>Shopping Cart</h1>} />
