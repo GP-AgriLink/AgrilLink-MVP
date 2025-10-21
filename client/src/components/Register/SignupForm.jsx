@@ -183,9 +183,9 @@ const SignupForm = () => {
 
         <p className="text-center text-sm text-gray-500 mt-4">
           Already Signed Up?{" "}
-          <a href="" className="text-emerald-600 hover:underline font-medium">
+          <Link to="/login" className="text-emerald-600 hover:underline font-medium">
             Login
-          </a>
+          </Link>
         </p>
       </form>
     </div>

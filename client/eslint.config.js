@@ -2,17 +2,12 @@ import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import react from 'eslint-plugin-react'
 
-export default defineConfig([
-  globalIgnores(['dist']),
+export default [
+  { ignores: ['dist', 'node_modules', '*.config.js', '**/*.css'] },
   {
     files: ['**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-    ],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -22,8 +17,41 @@ export default defineConfig([
         sourceType: 'module',
       },
     },
+    plugins: {
+      'react': react,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      ...js.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      ...react.configs.recommended.rules,
+      ...react.configs['jsx-runtime'].rules,
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
+      // Allow unused vars that start with underscore
+      'no-unused-vars': ['error', { 
+        varsIgnorePattern: '^_',
+        argsIgnorePattern: '^_',
+      }],
+      // React specific rules
+      'react/prop-types': 'off',
+      'react/react-in-jsx-scope': 'off',
+      'react/jsx-uses-react': 'off',
+      'react/jsx-uses-vars': 'error',
+      // Allow console for development
+      'no-console': ['warn', { allow: ['warn', 'error', 'log'] }],
+      // Tailwind CSS - allow long lines for className strings
+      'max-len': 'off',
+      // Allow empty components (for layouts)
+      'react/jsx-no-useless-fragment': 'off',
     },
   },
-])
+]
