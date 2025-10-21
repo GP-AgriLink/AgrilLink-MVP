@@ -1,1 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.main-content {
+    min-height: 77vh;
+    box-sizing: border-box;
+    text-align: center;
+    h1 {
+        padding: 4rem;
+        font-size: 3.2em;
+        font-weight: 600;
+        line-height: 1.1;
+    }
+}
