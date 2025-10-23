@@ -8,32 +8,43 @@ const generateToken = require("../utils/generateToken.js");
  * @access  Public
  */
 const registerFarmer = async (req, res) => {
-  // 1. Check for validation errors from the route middleware
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { farmName, email, password, specialties } = req.body;
+  // 1. Destructure the new fields from the request body
+  const {
+    firstName,
+    lastName,
+    phoneNumber,
+    farmName,
+    email,
+    password,
+    specialties,
+  } = req.body;
 
   try {
-    // 2. Check if a farmer with the same email already exists
     const farmerExists = await Farmer.findOne({ email });
     if (farmerExists) {
       return res.status(400).json({ message: "Farmer already exists" });
     }
 
-    // 3. Create the new farmer (password will be hashed by the pre-save hook)
     const farmer = await Farmer.create({
+      firstName,
+      lastName,
+      phoneNumber,
       farmName,
       email,
       password,
       specialties,
     });
 
-    // 4. Respond with farmer data and a JWT
     res.status(201).json({
       _id: farmer._id,
+      firstName: farmer.firstName,
+      lastName: farmer.lastName,
+      phoneNumber: farmer.phoneNumber,
       farmName: farmer.farmName,
       email: farmer.email,
       specialties: farmer.specialties,
