@@ -22,6 +22,7 @@ const registerFarmer = async (req, res) => {
     email,
     password,
     specialties,
+    location,
   } = req.body;
 
   try {
@@ -38,6 +39,10 @@ const registerFarmer = async (req, res) => {
       email,
       password,
       specialties,
+      location: {
+        type: "Point",
+        coordinates: location.coordinates, // [longitude, latitude]
+      },
     });
 
     res.status(201).json({
@@ -47,6 +52,7 @@ const registerFarmer = async (req, res) => {
       phoneNumber: farmer.phoneNumber,
       farmName: farmer.farmName,
       email: farmer.email,
+      location: farmer.location,
       specialties: farmer.specialties,
       token: generateToken(farmer._id),
     });
@@ -110,4 +116,54 @@ const getFarmerProfile = async (req, res) => {
   }
 };
 
-module.exports = { registerFarmer, loginFarmer, getFarmerProfile };
+/**
+ * @desc    Update a farmer's profile
+ * @route   PUT /api/farmers/profile
+ * @access  Private
+ */
+const updateFarmerProfile = async (req, res) => {
+  // Check for validation errors first
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  // The 'protect' middleware gives us the logged-in user on req.farmer
+  const farmer = await Farmer.findById(req.farmer._id);
+
+  if (farmer) {
+    // Update fields if they are provided in the request body
+    farmer.firstName = req.body.firstName || farmer.firstName;
+    farmer.lastName = req.body.lastName || farmer.lastName;
+    farmer.farmName = req.body.farmName || farmer.farmName;
+    farmer.phoneNumber = req.body.phoneNumber || farmer.phoneNumber;
+    farmer.location = req.body.location || farmer.location;
+
+    // Note: We are not allowing email or password changes here for simplicity.
+    // That would require additional verification logic.
+
+    const updatedFarmer = await farmer.save();
+
+    // Respond with the updated farmer data
+    res.json({
+      _id: updatedFarmer._id,
+      firstName: updatedFarmer.firstName,
+      lastName: updatedFarmer.lastName,
+      farmName: updatedFarmer.farmName,
+      email: updatedFarmer.email, // email is not changed but good to return
+      phoneNumber: updatedFarmer.phoneNumber,
+      location: updatedFarmer.location,
+      // We don't return a new token as the payload hasn't changed
+    });
+  } else {
+    res.status(404);
+    throw new Error("Farmer not found");
+  }
+};
+
+module.exports = {
+  registerFarmer,
+  loginFarmer,
+  getFarmerProfile,
+  updateFarmerProfile,
+};
