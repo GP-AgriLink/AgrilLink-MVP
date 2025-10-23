@@ -14,8 +14,11 @@ const router = express.Router();
 // @route   POST /api/farmers/register
 router.post(
   "/register",
-  // Validation middleware
   [
+    body("firstName", "First name is required").not().isEmpty(),
+    body("lastName", "Last name is required").not().isEmpty(),
+    body("phoneNumber", "Phone number is required").not().isEmpty(),
+
     body("farmName", "Farm name is required").not().isEmpty(),
     body("email", "Please include a valid email").isEmail(),
     body("password", "Password must be 6 or more characters").isLength({

@@ -1,6 +1,7 @@
 // Import required modules
 const express = require("express");
 const dotenv = require("dotenv");
+const cors = require("cors");
 const connectDB = require("./src/config/db.js");
 const farmerRoutes = require("./src/routes/farmerRoutes.js");
 
@@ -15,7 +16,7 @@ const app = express();
 
 // Middleware to parse incoming JSON request bodies
 app.use(express.json());
-
+app.use(cors());
 // --- API Routes ---
 // Mount the farmer-related routes under the '/api/farmers' prefix
 app.use("/api/farmers", farmerRoutes);
