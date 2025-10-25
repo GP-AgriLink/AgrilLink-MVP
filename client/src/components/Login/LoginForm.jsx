@@ -60,6 +60,15 @@ const LoginForm = () => {
           onChange={handleChange}
           error={errors.password}
         />
+        
+        <div className="text-right">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-medium text-emerald-600 hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </div>
 
         <button
           type="submit"
