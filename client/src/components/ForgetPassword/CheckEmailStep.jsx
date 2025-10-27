@@ -36,7 +36,7 @@ const CheckEmailStep = ({ email, onResend, onBack }) => {
         </h1>
         <p className="text-center text-gray-500 text-sm mb-8">
           Thanks! An email was sent to <span className="font-bold text-gray-800">{email}</span>. 
-          If you don't get the email, please contact support@agrilink.com
+          If you don't get the email, please contact agrilink.corp@gmail.com
         </p>
 
         <button className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-600 hover:to-teal-700 transition-all mb-4 shadow-lg shadow-emerald-200">
