@@ -4,8 +4,8 @@ import LoginForm from '../components/Login/LoginForm';
 
 const FarmerLogin = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center py-10 px-4">
-      <div className="flex flex-col md:flex-row bg-white rounded-3xl shadow-2xl overflow-hidden w-full max-w-6xl gap-0">
+    <div className="relative min-h-fit flex items-center justify-center py-6 px-6">
+      <div className="relative flex flex-col md:flex-row items-center justify-between max-w-[1024px] w-full gap-12 z-10">
         <InfoSection />
         <LoginForm />
       </div>

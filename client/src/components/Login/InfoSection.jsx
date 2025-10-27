@@ -1,39 +1,30 @@
 const InfoSection = () => {
   return (
-    <div className="md:w-1/2 p-8 bg-white flex flex-col justify-center text-left rounded-3xl shadow-md">
-      <h2 className="text-3xl font-bold text-gray-900 mb-4">
+    <div className="hidden md:flex md:flex-1 max-w-[448px] flex-col gap-6 p-10 bg-white/80 border border-[rgba(167,243,208,0.7)] rounded-[40px] shadow-[rgb(255,255,255)_0px_24px_48px_-32px] text-[#022c22]">
+      <h2 className="text-[30px] font-semibold leading-[36px] tracking-[-0.6px] text-[#022c22] font-['Inter']">
         Welcome back, growers.
       </h2>
-      <p className="text-gray-600 text-base mb-6 leading-relaxed">
+      <p className="text-[rgba(6,78,59,0.75)]">
         Access your dashboard to update your harvest availability, manage
         farm store orders, and connect with nearby co-ops.
       </p>
 
-      <h3 className="text-emerald-600 uppercase tracking-wider text-xs font-bold mb-3">
-        Need Assistance?
-      </h3>
-      <ul className="text-gray-700 text-sm space-y-2.5 list-none">
-        <li className="flex items-start">
-          <span className="text-emerald-500 mr-2">•</span>
-          <span>
-            Reach our support team at{" "}
-            <a
-              href="mailto:support@agrilink.com"
-              className="text-emerald-600 hover:underline"
-            >
-              support@agrilink.com
-            </a>
-          </span>
-        </li>
-        <li className="flex items-start">
-          <span className="text-emerald-500 mr-2">•</span>
-          <span>Join monthly grower workshops and trainings</span>
-        </li>
-        <li className="flex items-start">
-          <span className="text-emerald-500 mr-2">•</span>
-          <span>Discover distribution partners within your region</span>
-        </li>
-      </ul>
+      <div className="mt-auto text-sm leading-5 text-[rgba(6,78,59,0.7)]">
+        <p className="text-sm font-semibold tracking-[3.5px] uppercase text-[#047857] mb-4">
+          Need assistance?
+        </p>
+        <ul className="text-sm leading-5 text-[rgba(6,78,59,0.7)] space-y-2 list-none">
+          <li className="flex items-start">
+            <span>• Reach our support team at agrilink.corp@gmail.com</span>
+          </li>
+          <li className="flex items-start mt-2">
+            <span>• Join monthly grower workshops and trainings</span>
+          </li>
+          <li className="flex items-start mt-2">
+            <span>• Discover distribution partners within your region</span>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };

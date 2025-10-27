@@ -9,7 +9,7 @@ const InputField = ({
 }) => {
   return (
     <div>
-      <label className="block text-gray-700 text-sm font-medium mb-1.5">
+      <label className="inline text-sm font-semibold leading-5 text-[#064e3b]">
         {label}
       </label>
       <input
@@ -18,12 +18,13 @@ const InputField = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-600 focus:outline-none transition-all
-    placeholder-gray-300
+        className={`w-full mt-2 px-4 py-3 text-sm leading-5 text-[#022c22] bg-white border rounded-2xl transition-all
+    placeholder:text-gray-300
+    focus:outline-none focus:ring-2 focus:ring-offset-2
     ${
       error
         ? "border-red-400 focus:ring-red-400"
-        : "border-emerald-200 focus:border-emerald-400"
+        : "border-[rgba(167,243,208,0.7)] focus:ring-emerald-600"
     }`}
       />
       {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
