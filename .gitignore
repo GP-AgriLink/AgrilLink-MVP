@@ -1,45 +1,108 @@
 # ============================================
 # Dependencies
 # ============================================
+node_modules/
 **/node_modules/
 **/.pnp
 **/.pnp.js
 
+# Client Dependencies
+client/node_modules/
+client/.pnp
+client/.pnp.js
+
+# Server Dependencies
+server/node_modules/
+server/.pnp
+server/.pnp.js
+
 # ============================================
 # Environment Variables
 # ============================================
-**/.env
-**/.env.local
-**/.env.development.local
-**/.env.test.local
-**/.env.production.local
-**/.env.*.local
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Client Environment Variables
+client/.env
+client/.env.local
+client/.env.development.local
+client/.env.test.local
+client/.env.production.local
+client/.env.*.local
+
+# Server Environment Variables
+server/.env
+server/.env.local
+server/.env.development.local
+server/.env.test.local
+server/.env.production.local
+server/.env.*.local
 
 # ============================================
 # Logs
 # ============================================
-**/logs/
-**/*.log
-**/npm-debug.log*
-**/yarn-debug.log*
-**/yarn-error.log*
-**/pnpm-debug.log*
-**/lerna-debug.log*
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Client Logs
+client/logs/
+client/*.log
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+
+# Server Logs
+server/logs/
+server/*.log
+server/npm-debug.log*
+server/yarn-debug.log*
+server/yarn-error.log*
 
 # ============================================
 # Build Output
 # ============================================
-**/build/
-**/dist/
-**/dist-ssr/
-**/*.local
+build/
+dist/
+dist-ssr/
+*.local
+
+# Client Build Output
+client/build/
+client/dist/
+client/dist-ssr/
+client/*.local
+
+# Server Build Output
+server/build/
+server/dist/
+server/dist-ssr/
+server/*.local
 
 # ============================================
 # Testing
 # ============================================
-**/coverage/
-**/*.test.js.snap
-**/.nyc_output/
+coverage/
+*.test.js.snap
+.nyc_output/
+
+# Client Testing
+client/coverage/
+client/*.test.js.snap
+client/.nyc_output/
+
+# Server Testing
+server/coverage/
+server/*.test.js.snap
+server/.nyc_output/
 
 # ============================================
 # IDE and Editor
@@ -122,12 +185,22 @@
 # ============================================
 # Cache
 # ============================================
-**/.cache/
-**/.parcel-cache/
-**/.rpt2_cache/
-**/.rts2_cache_cjs/
-**/.rts2_cache_es/
-**/.rts2_cache_umd/
+.cache/
+.parcel-cache/
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Client Cache
+client/.cache/
+client/.parcel-cache/
+client/.eslintcache
+client/.stylelintcache
+
+# Server Cache
+server/.cache/
+server/.eslintcache
 
 # ============================================
 # Serverless
@@ -165,8 +238,16 @@
 # ============================================
 # Uploads (file uploads)
 # ============================================
-**/uploads/
-**/public/uploads/
+uploads/
+public/uploads/
+
+# Client Uploads
+client/uploads/
+client/public/uploads/
+
+# Server Uploads
+server/uploads/
+server/public/uploads/
 
 # ============================================
 # SSL Certificates
@@ -185,8 +266,16 @@
 # ============================================
 # Temporary Folders
 # ============================================
-**/tmp/
-**/temp/
+tmp/
+temp/
+
+# Client Temporary Folders
+client/tmp/
+client/temp/
+
+# Server Temporary Folders
+server/tmp/
+server/temp/
 
 # ============================================
 # Framework Specific
