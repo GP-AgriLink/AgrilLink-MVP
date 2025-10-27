@@ -1,28 +1,27 @@
-const express = require("express");
-const { body } = require("express-validator");
-const {
+/**
+ * @file farmerRoutes.js
+ * @description Defines the API endpoints for farmers, applies validation, and attaches middleware.
+ */
+import express from "express";
+import { body } from "express-validator";
+import {
   registerFarmer,
   loginFarmer,
   getFarmerProfile,
   updateFarmerProfile,
-} = require("../controllers/farmerController.js");
-const { protect } = require("../middleware/authMiddleware.js");
+} from "../controllers/farmerController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // --- Public Routes ---
 
 // @route   POST /api/farmers/register
+// Handles new farmer registration.
 router.post(
   "/register",
+  // Validation middleware to sanitize and check required fields.
   [
-    body("firstName", "First name is required").not().isEmpty(),
-    body("lastName", "Last name is required").not().isEmpty(),
-    body("phoneNumber", "Phone number is required").not().isEmpty(),
-    body("location.coordinates", "Location coordinates are required").isArray({
-      min: 2,
-      max: 2,
-    }),
     body("farmName", "Farm name is required").not().isEmpty(),
     body("email", "Please include a valid email").isEmail(),
     body("password", "Password must be 6 or more characters").isLength({
@@ -33,9 +32,10 @@ router.post(
 );
 
 // @route   POST /api/farmers/login
+// Handles farmer login.
 router.post(
   "/login",
-  // Validation middleware
+  // Validation middleware.
   [
     body("email", "Please include a valid email").isEmail(),
     body("password", "Password is required").exists(),
@@ -45,29 +45,13 @@ router.post(
 
 // --- Private Routes ---
 
-// @route   GET or PUT /api/farmers/profile
-// The 'protect' middleware runs first. If the token is valid, it calls getFarmerProfile.
+// @route   GET & PUT /api/farmers/profile
+// This single route handles two different HTTP methods for the same resource.
 router
   .route("/profile")
-  // GET request to fetch the profile
+  // The 'protect' middleware runs first. If the token is valid, it calls the controller.
   .get(protect, getFarmerProfile)
-  // Add the PUT request to update the profile
-  .put(
-    protect,
+  // The PUT request also requires a valid token.
+  .put(protect, updateFarmerProfile);
 
-    [
-      body("firstName", "First name cannot be empty").optional().notEmpty(),
-      body("lastName", "Last name cannot be empty").optional().notEmpty(),
-      body("farmName", "Farm name cannot be empty").optional().notEmpty(),
-      body("phoneNumber", "Phone number cannot be empty").optional().notEmpty(),
-      body(
-        "location.coordinates",
-        "Location coordinates must be an array of 2 numbers"
-      )
-        .optional()
-        .isArray({ min: 2, max: 2 }),
-    ],
-    updateFarmerProfile
-  );
-
-module.exports = router;
+export default router;

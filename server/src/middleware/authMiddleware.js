@@ -1,40 +1,45 @@
-const jwt = require("jsonwebtoken");
-const Farmer = require("../models/Farmer.js");
+/**
+ * @file authMiddleware.js
+ * @description Middleware to protect routes by verifying a JWT.
+ */
+import jwt from "jsonwebtoken";
+import Farmer from "../models/Farmer.js";
 
 /**
- * Middleware to protect routes. Verifies a JWT and attaches the
- * user to the request object.
+ * Middleware function that checks for a valid JWT in the Authorization header.
+ * If valid, it decodes the payload, finds the associated farmer, and attaches
+ * the farmer object to the request (`req.farmer`) for use in subsequent controllers.
  */
 const protect = async (req, res, next) => {
   let token;
 
-  // Check for the token in the 'Authorization' header
+  // Check for "Bearer <token>" in the Authorization header.
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
     try {
-      // Extract the token from the "Bearer <token>" string
+      // Extract the token string.
       token = req.headers.authorization.split(" ")[1];
 
-      // Verify the token using the secret key
+      // Verify the token's signature and expiration.
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Find the farmer by the id from the token's payload
-      // and attach the user object to the request (excluding the password)
+      // Find the farmer by the ID from the token's payload.
+      // .select('-password') prevents the hashed password from being returned.
       req.farmer = await Farmer.findById(decoded.id).select("-password");
 
-      // Proceed to the next middleware or route handler
+      // Proceed to the next middleware or the route's controller.
       return next();
     } catch (error) {
       return res.status(401).json({ message: "Not authorized, token failed" });
     }
   }
 
-  // If no token is found, deny access
+  // If no token is found in the header, deny access.
   if (!token) {
     return res.status(401).json({ message: "Not authorized, no token" });
   }
 };
 
-module.exports = { protect };
+export { protect };
