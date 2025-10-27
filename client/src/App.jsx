@@ -3,6 +3,8 @@ import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
 import FarmerSignup from './pages/FarmerSignup'
 import FarmerLogin from './pages/FarmerLogin'
+import EditProfile from './pages/EditProfile';
+import ForgotPasswordFlow from './pages/ForgotPasswordFlow'; // 1. تم إضافة الـ import
 
 function App() {
   return (
@@ -18,8 +20,13 @@ function App() {
           } />
           <Route path="/about" element={<h1>About Page</h1>} />
           <Route path="/contact-us" element={<h1>Contact Us Page</h1>} />
+          
+          {/* Auth Routes */}
           <Route path="/login" element={<FarmerLogin />} />
           <Route path="/register" element={<FarmerSignup />} />
+          <Route path="/forgot-password" element={<ForgotPasswordFlow />} /> {/* 2. تم إضافة الـ Route */}
+          <Route path="/edit-profile" element={<EditProfile />} />
+
           <Route path="/for-farmers" element={<h1>For Farmers Page</h1>} />
           <Route path="/cart" element={<h1>Shopping Cart</h1>} />
         </Routes>
