@@ -9,6 +9,8 @@ import {
   loginFarmer,
   getFarmerProfile,
   updateFarmerProfile,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/farmerController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -42,6 +44,10 @@ router.post(
   ],
   loginFarmer
 );
+
+// --- PASSWORD RESET ROUTES ---
+router.post("/forgot-password", forgotPassword);
+router.put("/reset-password/:token", resetPassword);
 
 // --- Private Routes ---
 

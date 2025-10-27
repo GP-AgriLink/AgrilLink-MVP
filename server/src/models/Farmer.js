@@ -25,6 +25,10 @@ const farmerSchema = new mongoose.Schema(
       required: true,
     },
 
+    // --- For Resetting password ---
+    passwordResetToken: { type: String },
+    passwordResetExpires: { type: Date },
+
     // --- OPTIONAL (added/updated via profile) ---
     firstName: { type: String },
     lastName: { type: String },
