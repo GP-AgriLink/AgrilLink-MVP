@@ -1,193 +1,186 @@
-import {useState} from "react";
+import {Link, useNavigate} from "react-router-dom";
+import {useAuth} from "../../context/AuthContext";
 import InputField from "./InputField";
-import {registerFarmer} from "../../services/farmerService";
-import {Link} from "react-router-dom";
+import Logo from "../common/Logo";
+import {Formik, Form} from "formik";
+import * as Yup from "yup";
+
+// Yup validation schema
+const SignupSchema = Yup.object({
+  farmName: Yup.string()
+    .matches(/^[A-Za-z\s]+$/, "Farm name cannot contain numbers or symbols")
+    .min(3, "Farm name must be at least 3 characters long")
+    .required("Farm name is required"),
+
+  email: Yup.string()
+    // Strong RFC 5322 for
+    .matches(
+      /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|hotmail|outlook|icloud|email)\.(com|net|org|edu|gov|eg)$/,
+      "Please enter a valid email address"
+    )
+    .required("Email is required"),
+
+  password: Yup.string()
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/,
+      "Password must contain at least one uppercase, one lowercase, one number, and one special character"
+    )
+    .min(6, "Password must be at least 6 characters long")
+    .required("Password is required"),
+
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password"), null], "Passwords do not match")
+    .required("Confirm password is required"),
+});
 
 const SignupForm = () => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phoneNumber: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
-
-  const handleChange = (e) => {
-    setFormData({...formData, [e.target.name]: e.target.value});
-  };
-
-  const mapBackendErrors = (backendErrors) => {
-    const errObj = {};
-    backendErrors.forEach((err) => {
-      errObj[err.param] = err.msg;
-    });
-    return errObj;
-  };
-
-  const validateLocal = () => {
-    const newErrors = {};
-    if (!formData.firstName.trim())
-      newErrors.firstName = "First name is required";
-    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    if (!formData.password.trim()) newErrors.password = "Password is required";
-    if (!formData.confirmPassword.trim())
-      newErrors.confirmPassword = "Confirm password is required";
-    if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
-    if (!formData.phoneNumber.trim())
-      newErrors.phoneNumber = "Phone number is required";
-    return newErrors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSuccessMsg("");
-
-    const localErrors = validateLocal();
-    setErrors(localErrors);
-    if (Object.keys(localErrors).length > 0) return;
-
-    setLoading(true);
-    try {
-      const response = await registerFarmer({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        phoneNumber: formData.phoneNumber,
-      });
-
-      setSuccessMsg("✅ Registration successful!");
-      localStorage.setItem("token", response.token);
-
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        phoneNumber: "",
-      });
-      setErrors({});
-    } catch (backendErrors) {
-      setErrors(mapBackendErrors(backendErrors));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const navigate = useNavigate();
+  const {register} = useAuth();
 
   return (
-    <div className="md:w-1/2 p-10 flex flex-col justify-center bg-white rounded-3xl">
-      <div className="text-center mb-6">
-        <div className="bg-emerald-100 text-emerald-700 px-5 py-1.5 rounded-full text-xs font-bold inline-block tracking-widest mb-4">
-          FARMER PORTAL
-        </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+    <div className="relative w-full max-w-[576px] flex flex-col items-center gap-1 p-8 bg-white/95 border border-[rgba(167,243,208,0.7)] rounded-[44px] shadow-[rgb(255,255,255)_0px_24px_48px_-32px] text-[#064e3b]">
+      {/* Logo positioned at top */}
+      <div className="absolute -top-4 p-2 bg-white rounded-full">
+        <Logo />
+      </div>
+
+      {/* Header Section */}
+      <div className="flex flex-col items-center gap-4 w-full text-center mt-8">
+        <span className="flex items-center px-4 py-1 bg-[#ecfdf5] text-[#047857] text-xs font-semibold tracking-[3.6px] uppercase rounded-full">
+          Farmer Portal
+        </span>
+        <h1 className="text-[30px] font-bold leading-9 tracking-[-0.6px] text-[#022c22] font-['Inter']">
           Farmer Sign Up
-        </h2>
-        <p className="text-gray-500 text-sm leading-relaxed">
-          Secure access to your farm storefront and logistics tools.
-          <br />
-          Enter your credentials to continue.
+        </h1>
+        <p className="text-sm leading-5 text-[rgba(6,78,59,0.75)] max-w-96">
+          Create your farm account and start connecting with customers. Enter
+          your details to continue.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 text-left mt-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField
-            label="First Name"
-            name="firstName"
-            type="text"
-            placeholder="Ex: Jhon"
-            value={formData.firstName}
-            onChange={handleChange}
-            error={errors.firstName}
-          />
+      {/* Formik Form */}
+      <Formik
+        initialValues={{
+          farmName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        }}
+        validationSchema={SignupSchema}
+        onSubmit={async (values, {setSubmitting, setFieldError}) => {
+          try {
+            const result = await register(
+              values.farmName,
+              values.email,
+              values.password
+            );
 
-          <InputField
-            label="Last Name"
-            name="lastName"
-            type="text"
-            placeholder="Ex: Doe"
-            value={formData.lastName}
-            onChange={handleChange}
-            error={errors.lastName}
-          />
-        </div>
+            if (result.success) {
+              navigate("/");
+            } else {
+              // Show backend error under the correct field if available
+              if (result.field && result.error) {
+                setFieldError(result.field, result.error);
+              } else {
+                setFieldError("email", result.error || "Registration failed");
+              }
+            }
+          } catch (err) {
+            setFieldError(
+              "email",
+              "An unexpected error occurred. Please try again."
+            );
+          } finally {
+            setSubmitting(false);
+          }
+        }}
+      >
+        {({
+          values,
+          errors,
+          touched,
+          handleChange,
+          handleBlur,
+          isSubmitting,
+        }) => (
+          <Form className="w-5/6" aria-label="Farmer signup form">
+            <InputField
+              label="Farm Name"
+              name="farmName"
+              type="text"
+              placeholder="Enter your farm name"
+              value={values.farmName}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={touched.farmName && errors.farmName}
+            />
 
-        <InputField
-          label="Email"
-          name="email"
-          type="email"
-          placeholder="your.email@example.com"
-          value={formData.email}
-          onChange={handleChange}
-          error={errors.email}
-        />
+            <div className="mt-4">
+              <InputField
+                label="Email"
+                name="email"
+                type="email"
+                placeholder="your.email@example.com"
+                value={values.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.email && errors.email}
+              />
+            </div>
 
-        <InputField
-          label="Phone Number"
-          name="phoneNumber"
-          type="text"
-          placeholder="+20123456789"
-          value={formData.phoneNumber}
-          onChange={handleChange}
-          error={errors.phoneNumber}
-        />
+            <div className="mt-4">
+              <InputField
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                value={values.password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.password && errors.password}
+              />
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField
-            label="Password"
-            name="password"
-            type="password"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={handleChange}
-            error={errors.password}
-          />
+            <div className="mt-4">
+              <InputField
+                label="Confirm Password"
+                name="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={values.confirmPassword}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.confirmPassword && errors.confirmPassword}
+              />
+            </div>
 
-          <InputField
-            label="Confirm Password"
-            name="confirmPassword"
-            type="password"
-            placeholder="••••••••"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            error={errors.confirmPassword}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full bg-emerald-500 text-white rounded-full py-3 font-semibold transition-all shadow-md mt-6 ${
-            loading
-              ? "opacity-70 cursor-not-allowed"
-              : "hover:bg-emerald-600 hover:shadow-lg"
-          }`}
-        >
-          {loading ? "Submitting..." : "Sign Up"}
-        </button>
-
-        {successMsg && (
-          <p className="text-emerald-600 text-center text-sm mt-3">
-            {successMsg}
-          </p>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              aria-label="Sign up to AgriLink"
+              className={`w-full mt-6 inline-flex items-center justify-center px-6 py-3 bg-[#10b981] text-white font-semibold text-center rounded-full transition-all shadow-[rgba(40,86,56,0.65)_0px_30px_80px_-40px] ${
+                isSubmitting
+                  ? "opacity-70 cursor-not-allowed"
+                  : "hover:bg-emerald-600 hover:shadow-lg"
+              }`}
+            >
+              {isSubmitting ? "Creating account..." : "Sign Up"}
+            </button>
+          </Form>
         )}
+      </Formik>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Already Signed Up?{" "}
-          <Link to="/login" className="text-emerald-600 hover:underline font-medium">
-            Login
-          </Link>
-        </p>
-      </form>
+      <p className="text-sm leading-5 text-[rgba(6,78,59,0.75)]">
+        Already have an account?{" "}
+        <Link
+          to="/login"
+          className="inline text-sm font-semibold leading-5 text-[#047857] hover:underline"
+        >
+          Login
+        </Link>
+      </p>
+
+      <div className="absolute inset-0 -z-10 rounded-[48px] pointer-events-none bg-[radial-gradient(circle_at_center_top,rgba(35,97,69,0.15),rgba(0,0,0,0)_60%),radial-gradient(circle_at_center_bottom,rgba(52,120,88,0.12),rgba(0,0,0,0)_55%)]" />
     </div>
   );
 };

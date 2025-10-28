@@ -46,11 +46,10 @@ export default function EditProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 py-8 px-4">
+    <div className="min-h-screen">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-8">
           
-          {/* --- (3) إضافة اللوجو هنا --- */}
           <Logo className="mb-12" /> 
 
           <h1 className="text-2xl font-semibold text-gray-800 mb-8">Edit Profile</h1>

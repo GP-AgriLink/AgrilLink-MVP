@@ -1,38 +1,64 @@
 import { Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 import Navbar from './components/Navbar/Navbar'
 import Footer from './components/Footer/Footer'
-import FarmerSignup from './pages/FarmerSignup'
-import FarmerLogin from './pages/FarmerLogin'
+import FarmerSignup from './pages/FarmRegister'
+import FarmerLogin from './pages/FarmLogin'
 import EditProfile from './pages/EditProfile';
-import ForgotPasswordFlow from './pages/ForgotPasswordFlow'; // 1. تم إضافة الـ import
+import ForgotPasswordFlow from './pages/ForgotPasswordFlow';
 
 function App() {
   return (
-    <div className="app">
-      <Navbar />
-      <main className="main-content">
-        <Routes>
-          <Route path="/" element={
-            <>
-              <h1>Discover Page</h1>
-              <p>Welcome to AgriLink - Your connection to fresh local farms!</p>
-            </>
-          } />
-          <Route path="/about" element={<h1>About Page</h1>} />
-          <Route path="/contact-us" element={<h1>Contact Us Page</h1>} />
-          
-          {/* Auth Routes */}
-          <Route path="/login" element={<FarmerLogin />} />
-          <Route path="/register" element={<FarmerSignup />} />
-          <Route path="/forgot-password" element={<ForgotPasswordFlow />} /> {/* 2. تم إضافة الـ Route */}
-          <Route path="/edit-profile" element={<EditProfile />} />
+    <AuthProvider>
+      <div className="app min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex flex-col">
+        <Navbar />
+        <main className="main-content w-5/6 mx-auto flex-grow">
+          <Routes>
+            <Route path="/" element={
+              <div className="container mx-auto px-6 py-12">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">Discover Page</h1>
+                <p className="text-lg text-gray-700">Welcome to AgriLink - Your connection to fresh local farms!</p>
+              </div>
+            } />
+            <Route path="/about" element={
+              <div className="container mx-auto px-6 py-12">
+                <h1 className="text-4xl font-bold text-gray-900">About Page</h1>
+              </div>
+            } />
+            <Route path="/contact-us" element={
+              <div className="container mx-auto px-6 py-12">
+                <h1 className="text-4xl font-bold text-gray-900">Contact Us Page</h1>
+              </div>
+            } />
 
-          <Route path="/for-farmers" element={<h1>For Farmers Page</h1>} />
-          <Route path="/cart" element={<h1>Shopping Cart</h1>} />
-        </Routes>
-      </main>
-      <Footer />
-    </div>
+            {/* Auth Routes */}
+            <Route path="/login" element={<FarmerLogin />} />
+            <Route path="/register" element={<FarmerSignup />} />
+            <Route path="/forgot-password" element={<ForgotPasswordFlow />} />
+
+            {/* Protected Routes */}
+            <Route path="/edit-profile" element={
+              <ProtectedRoute>
+                <EditProfile />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/for-farmers" element={
+              <div className="container mx-auto px-6 py-12">
+                <h1 className="text-4xl font-bold text-gray-900">For Farmers Page</h1>
+              </div>
+            } />
+            <Route path="/cart" element={
+              <div className="container mx-auto px-6 py-12">
+                <h1 className="text-4xl font-bold text-gray-900">Shopping Cart</h1>
+              </div>
+            } />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </AuthProvider>
   )
 }
 

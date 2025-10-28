@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 function Logo({ className }) {
   return (
-    <Link to="/" className={`flex items-center gap-3 rounded-full border border-emerald-200 shadow-sm text-emerald-900 font-semibold tracking-[2.8px] uppercase px-4 py-2 no-underline transition-transform hover:-translate-y-0.5 ${className || ''}`}>
+    <Link to="/" className={`flex items-center gap-3 rounded-full border border-emerald-200 shadow-sm text-emerald-900 font-semibold tracking-[2.8px] uppercase px-4 py-2 no-underline transition-transform hover:-translate-y-0.5 ${className}`}>
       {/* Logo Icon */}
       <span className="w-9 h-9 rounded-full grid place-items-center bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-500 text-white">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">

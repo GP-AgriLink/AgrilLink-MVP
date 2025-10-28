@@ -2,9 +2,9 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-import ForgotPasswordStep from "../components/auth/ForgotPasswordStep";
-import CheckEmailStep from "../components/auth/CheckEmailStep";
-import PasswordChangedStep from "../components/auth/PasswordChangedStep";
+import ForgotPasswordStep from "../components/ForgetPassword/ForgotPasswordStep";
+import CheckEmailStep from "../components/ForgetPassword/CheckEmailStep";
+import PasswordChangedStep from "../components/ForgetPassword/PasswordChangedStep";
 
 export default function ForgotPasswordFlow() {
   const [step, setStep] = useState(1);
