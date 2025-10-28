@@ -25,14 +25,13 @@ const app = express();
 
 // To connect with client
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
   credentials: true
 }));
 
 // --- Middleware ---
 // This middleware is essential for parsing incoming request bodies with JSON payloads.
 app.use(express.json());
-app.use(cors());
 
 // --- API Routes ---
 // Mount the farmer-related routes. Any request starting with '/api/farmers'
