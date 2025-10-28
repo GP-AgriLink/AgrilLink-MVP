@@ -198,12 +198,12 @@ const forgotPassword = async (req, res) => {
 
     await farmer.save();
 
-    // 4. Create the reset URL and send the email (configure your email transport)
-    const resetURL = `${req.protocol}://${req.get(
-      "host"
-    )}/reset-password/${resetToken}`;
+    // 4. Create the reset URL pointing to the frontend client
+    // Use environment variable for frontend URL or fallback to localhost:5173
+    const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetURL = `${frontendURL}/reset-password/${resetToken}`;
 
-    // Example using nodemailer (replace with your actual email service)
+    // 5. Send the email using nodemailer
     const transporter = nodemailer.createTransport({
       service: "gmail", // Or another service
       auth: {
@@ -215,7 +215,49 @@ const forgotPassword = async (req, res) => {
     const mailOptions = {
       from: "AgriLink Support <support@agrilink.com>",
       to: farmer.email,
-      subject: "Password Reset Request",
+      subject: "Password Reset Request - AgriLink",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
+          <div style="background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">🔒 Password Reset Request</h1>
+          </div>
+          
+          <div style="background-color: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <p style="color: #374151; font-size: 16px; line-height: 1.6;">Hello,</p>
+            
+            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+              You are receiving this email because you (or someone else) requested a password reset for your AgriLink account.
+            </p>
+            
+            <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+              Please click the button below to reset your password. This link will expire in <strong>10 minutes</strong>.
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetURL}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">
+                Reset Password
+              </a>
+            </div>
+            
+            <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin-top: 20px;">
+              If the button doesn't work, copy and paste this link into your browser:
+            </p>
+            <p style="color: #10b981; font-size: 14px; word-break: break-all; background-color: #f3f4f6; padding: 10px; border-radius: 5px;">
+              ${resetURL}
+            </p>
+            
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+            
+            <p style="color: #ef4444; font-size: 14px; line-height: 1.6;">
+              ⚠️ <strong>Security Notice:</strong> If you did not request this password reset, please ignore this email. Your password will remain unchanged.
+            </p>
+            
+            <p style="color: #6b7280; font-size: 12px; margin-top: 30px; text-align: center;">
+              © 2025 AgriLink. All rights reserved.
+            </p>
+          </div>
+        </div>
+      `,
       text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\nPlease click on the following link, or paste this into your browser to complete the process within ten minutes of receiving it:\n\n${resetURL}\n\nIf you did not request this, please ignore this email and your password will remain unchanged.\n`,
     };
 
