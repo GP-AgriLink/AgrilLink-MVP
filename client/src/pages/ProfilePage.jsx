@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -9,23 +8,29 @@ import ProfileForm from "../components/Profile/ProfileForm";
 import AvatarUpload from "../components/Profile/AvatarUpload";
 import LocationPicker from "../components/Map/LocationPicker";
 import FlyToLocation from "../components/Map/FlyToLocation";
+import { getProfile } from "../services/profileApi";
+import { getAuthToken, clearAuthData } from "../context/AuthContext";
+
+// Default profile structure
+const getDefaultProfile = () => ({
+  id: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  farmName: "",
+  phoneNumber: "",
+  farmBio: "",
+  location: {
+    type: "Point",
+    coordinates: [30.0444, 31.2357], // Default to Cairo, Egypt
+  },
+  specialties: [],
+  avatarUrl: "",
+});
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    farmName: "",
-    phoneNumber: "",
-    farmBio: "",
-    location: {
-      coordinates: [51.505, -0.09], // Default coordinates (London)
-    },
-    specialties: [],
-    avatarUrl: "",
-  });
-
+  const [profile, setProfile] = useState(getDefaultProfile());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -37,70 +42,44 @@ const ProfilePage = () => {
   const fetchProfile = async () => {
     setLoading(true);
     setError(null);
+    
     try {
       console.log("Starting profile fetch...");
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       console.log("Token found:", token ? "Yes" : "No");
 
       if (!token) {
+        console.log("No token found, redirecting to login");
+        clearAuthData();
         navigate("/login");
         return;
       }
 
       console.log("Making API request...");
-      const response = await axios.get(
-        "http://localhost:5000/api/farmers/profile",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const data = await getProfile();
+      console.log("Raw API Response:", data);
 
-      console.log("Raw API Response:", response.data);
-
-      if (response.data) {
-        // Create a safe version of the response data
-        const safeData = typeof response.data === "object" ? response.data : {};
-
-        // Initialize profile data with default values
+      if (data) {
+        // Merge API data with default profile structure
         const profileData = {
-          id: "",
-          firstName: "",
-          lastName: "",
-          email: safeData.email || "",
-          farmName: "",
-          phoneNumber: "",
-          farmBio: "",
-          location: {
-            coordinates: safeData.location?.coordinates || [51.505, -0.09],
-          },
-          specialties: [],
-          avatarUrl: "",
+          ...getDefaultProfile(),
+          ...data,
+          location: data.location || getDefaultProfile().location,
+          specialties: Array.isArray(data.specialties) ? data.specialties : [],
         };
 
-        // Safely copy over any existing values
-        Object.keys(profileData).forEach((key) => {
-          if (typeof safeData[key] === "string") {
-            profileData[key] = safeData[key];
-          } else if (key === "specialties" && Array.isArray(safeData[key])) {
-            profileData[key] = safeData[key].filter(
-              (item) => typeof item === "string"
-            );
-          }
-        });
-
-        console.log("Sanitized Profile Data:", profileData);
+        console.log("Processed Profile Data:", profileData);
         setProfile(profileData);
         setImagePreview(profileData.avatarUrl || "");
       }
     } catch (err) {
       console.error("Error fetching profile:", err);
-      console.log("Response data:", err.response?.data);
-      console.log("Profile state:", profile);
-      setError(err.response?.data?.message || "Failed to fetch profile");
+      const errorMsg = err.response?.data?.message || "Failed to fetch profile";
+      setError(errorMsg);
+      
+      // If unauthorized, clear data and redirect
       if (err.response?.status === 401) {
-        localStorage.removeItem("token");
+        clearAuthData();
         navigate("/login");
       }
     } finally {

@@ -1,11 +1,23 @@
 // client/pages/EditProfile.jsx
 
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Camera, X } from "lucide-react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import axios from "axios";
+import { toast } from "react-toastify";
+import { getProfile, updateProfile } from "../services/profileApi";
+import { getAuthToken, clearAuthData } from "../context/AuthContext";
+import {
+  sanitizeName,
+  sanitizeEmail,
+  sanitizePhone,
+  sanitizeTextArea,
+  sanitizeArray,
+  validateCoordinates,
+  validateFile,
+} from "../utils/validation";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -44,20 +56,24 @@ function FlyToLocation({ coordinates }) {
   return null;
 }
 
-export default function EditProfile() {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    farmName: "",
-    email: "",
-    phoneNumber: "",
-    farmBio: "",
-    avatarUrl: "",
-    specialties: [],
-    location: { type: "Point", coordinates: [30.0444, 31.2357] },
-  });
+// Default form data structure
+const getDefaultFormData = () => ({
+  firstName: "",
+  lastName: "",
+  farmName: "",
+  email: "",
+  phoneNumber: "",
+  farmBio: "",
+  avatarUrl: "",
+  specialties: [],
+  location: { type: "Point", coordinates: [30.0444, 31.2357] },
+});
 
+export default function EditProfile() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState(getDefaultFormData());
   const [showMap, setShowMap] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const locationInputRef = useRef(null);
 
   const allSpecialties = [
@@ -71,43 +87,42 @@ export default function EditProfile() {
 
   // ✅ Fetch profile data on load
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileData = async () => {
       try {
-        const storedUser = localStorage.getItem("user");
-        const token = storedUser ? JSON.parse(storedUser).token : null;
+        const token = getAuthToken();
 
         if (!token) {
-          alert("No token found. Please log in again.");
+          console.log("No token found, redirecting to login");
+          toast.error("Please log in to edit your profile");
+          clearAuthData();
+          navigate("/login");
           return;
         }
 
-        const response = await axios.get(
-          "http://localhost:5000/api/farmers/profile",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const data = response.data || {};
-        setFormData((prev) => ({
-          ...prev,
-          firstName: data.firstName || "",
-          lastName: data.lastName || "",
-          farmName: data.farmName || "",
-          email: data.email || "",
-          phoneNumber: data.phoneNumber || "",
-          farmBio: data.farmBio || "",
-          avatarUrl: data.avatarUrl || "",
-          specialties: data.specialties || [],
-          location: data.location || { type: "Point", coordinates: [30.0444, 31.2357] },
-        }));
+        const data = await getProfile();
+        
+        if (data) {
+          setFormData({
+            ...getDefaultFormData(),
+            ...data,
+            location: data.location || getDefaultFormData().location,
+            specialties: Array.isArray(data.specialties) ? data.specialties : [],
+          });
+        }
       } catch (error) {
-        console.error("Error fetching profile:", error.response?.data || error);
+        console.error("Error fetching profile:", error);
+        if (error.response?.status === 401) {
+          toast.error("Session expired. Please log in again.");
+          clearAuthData();
+          navigate("/login");
+        } else {
+          toast.error("Failed to load profile data. Please try again.");
+        }
       }
     };
 
-    fetchProfile();
-  }, []);
+    fetchProfileData();
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -116,6 +131,17 @@ export default function EditProfile() {
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file before processing
+      const validation = validateFile(file, {
+        maxSize: 5 * 1024 * 1024, // 5MB
+        allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'],
+      });
+      
+      if (!validation.valid) {
+        toast.error(validation.error);
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData({ ...formData, avatarUrl: reader.result });
@@ -126,12 +152,17 @@ export default function EditProfile() {
 
   const handleAddSpecialty = (specialty) => {
     if (!specialty) return;
-    if (formData.specialties.includes(specialty)) return;
+    
+    // Sanitize the specialty name
+    const sanitizedSpecialty = sanitizeName(specialty);
+    
+    if (!sanitizedSpecialty) return;
+    if (formData.specialties.includes(sanitizedSpecialty)) return;
     if (formData.specialties.length >= 3) {
-      alert("You can select up to 3 specialties only!");
+      toast.warning("You can select up to 3 specialties only!");
       return;
     }
-    setFormData({ ...formData, specialties: [...formData.specialties, specialty] });
+    setFormData({ ...formData, specialties: [...formData.specialties, sanitizedSpecialty] });
   };
 
   const handleRemoveSpecialty = (specialty) => {
@@ -140,23 +171,69 @@ export default function EditProfile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    
     try {
-      const storedUser = localStorage.getItem("user");
-      const token = storedUser ? JSON.parse(storedUser).token : null;
+      const token = getAuthToken();
+      
       if (!token) {
-        alert("No token found. Please log in again.");
+        toast.error("Session expired. Please log in again.");
+        clearAuthData();
+        navigate("/login");
         return;
       }
-      const response = await axios.put(
-        "http://localhost:5000/api/farmers/profile",
-        formData,
-        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
-      );
-      console.log("Profile updated:", response.data);
-      alert("Profile updated successfully!");
+
+      // Sanitize all input data before submission
+      const sanitizedData = {
+        firstName: sanitizeName(formData.firstName || ''),
+        lastName: sanitizeName(formData.lastName || ''),
+        farmName: sanitizeName(formData.farmName || ''),
+        phoneNumber: sanitizePhone(formData.phoneNumber || ''),
+        farmBio: sanitizeTextArea(formData.farmBio || ''),
+        specialties: sanitizeArray(formData.specialties),
+        location: formData.location,
+        avatarUrl: formData.avatarUrl,
+      };
+      
+      // Validate coordinates
+      if (sanitizedData.location?.coordinates) {
+        const coordValidation = validateCoordinates(sanitizedData.location.coordinates);
+        if (!coordValidation.valid) {
+          toast.warning("Invalid location coordinates. Using default location.");
+          sanitizedData.location.coordinates = coordValidation.sanitized;
+        }
+      }
+
+      const updatedProfile = await updateProfile(sanitizedData);
+      console.log("Profile updated:", updatedProfile);
+      
+      // Show success toast
+      toast.success("Profile updated successfully!", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      
+      // Redirect to profile page after a short delay
+      setTimeout(() => {
+        navigate("/profile");
+      }, 2000);
     } catch (error) {
-      console.error("Error updating profile:", error.response?.data || error);
-      alert("Failed to update profile. Please try again.");
+      console.error("Error updating profile:", error);
+      
+      if (error.response?.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        clearAuthData();
+        navigate("/login");
+      } else {
+        const errorMsg = error.response?.data?.message || "Failed to update profile. Please try again.";
+        toast.error(errorMsg);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -361,10 +438,10 @@ export default function EditProfile() {
             <div className="flex justify-center mt-6">
               <button
                 type="submit"
-                className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-lg shadow-md hover:from-emerald-600 hover:to-teal-700 transition-all"
+                disabled={isLoading}
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-lg shadow-md hover:from-emerald-600 hover:to-teal-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-
-                Save Changes
+                {isLoading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>

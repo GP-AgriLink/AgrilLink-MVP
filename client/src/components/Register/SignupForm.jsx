@@ -3,35 +3,7 @@ import {useAuth} from "../../context/AuthContext";
 import InputField from "./InputField";
 import Logo from "../common/Logo";
 import {Formik, Form} from "formik";
-import * as Yup from "yup";
-
-// Yup validation schema
-const SignupSchema = Yup.object({
-  farmName: Yup.string()
-    .matches(/^[A-Za-z\s]+$/, "Farm name cannot contain numbers or symbols")
-    .min(3, "Farm name must be at least 3 characters long")
-    .required("Farm name is required"),
-
-  email: Yup.string()
-    // Strong RFC 5322 for
-    .matches(
-      /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|hotmail|outlook|icloud|email)\.(com|net|org|edu|gov|eg)$/,
-      "Please enter a valid email address"
-    )
-    .required("Email is required"),
-
-  password: Yup.string()
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/,
-      "Password must contain at least one uppercase, one lowercase, one number, and one special character"
-    )
-    .min(6, "Password must be at least 6 characters long")
-    .required("Password is required"),
-
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords do not match")
-    .required("Confirm password is required"),
-});
+import {registrationValidationSchema, sanitizeName, sanitizeEmail} from "../../utils/validation";
 
 const SignupForm = () => {
   const navigate = useNavigate();
@@ -66,13 +38,18 @@ const SignupForm = () => {
           password: "",
           confirmPassword: "",
         }}
-        validationSchema={SignupSchema}
+        validationSchema={registrationValidationSchema}
         onSubmit={async (values, {setSubmitting, setFieldError}) => {
           try {
+            // Sanitize input before sending
+            const sanitizedFarmName = sanitizeName(values.farmName);
+            const sanitizedEmail = sanitizeEmail(values.email);
+            const sanitizedPassword = values.password.trim();
+            
             const result = await register(
-              values.farmName,
-              values.email,
-              values.password
+              sanitizedFarmName,
+              sanitizedEmail,
+              sanitizedPassword
             );
 
             if (result.success) {

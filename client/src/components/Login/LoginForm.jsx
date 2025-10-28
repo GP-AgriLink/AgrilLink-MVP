@@ -2,30 +2,13 @@ import React from "react";
 import {Link, useNavigate} from "react-router-dom";
 import {useAuth} from "../../context/AuthContext";
 import {Formik, Form} from "formik";
-import * as Yup from "yup";
 import Logo from "../common/Logo";
 import InputField from "./InputField";
+import {loginValidationSchema, sanitizeEmail} from "../../utils/validation";
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const {login} = useAuth();
-
-  const validationSchema = Yup.object({
-    email: Yup.string()
-      // Strong RFC 5322 for
-      .matches(
-        /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|hotmail|outlook|icloud|email)\.(com|net|org|edu|gov|eg)$/,
-        "Please enter a valid email address"
-      )
-      .required("Email is required"),
-    password: Yup.string()
-      .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/,
-        "Please enter a valid password"
-      )
-      .min(6, "Password must be at least 6 characters long")
-      .required("Password is required"),
-  });
 
   const initialValues = {
     email: "",
@@ -34,7 +17,11 @@ const LoginForm = () => {
 
   const handleSubmit = async (values, {setSubmitting, setFieldError}) => {
     try {
-      const result = await login(values.email, values.password);
+      // Sanitize input before sending
+      const sanitizedEmail = sanitizeEmail(values.email);
+      const sanitizedPassword = values.password.trim();
+      
+      const result = await login(sanitizedEmail, sanitizedPassword);
 
       if (result.success) {
         navigate("/");
@@ -76,7 +63,7 @@ const LoginForm = () => {
       {/* Formik Form */}
       <Formik
         initialValues={initialValues}
-        validationSchema={validationSchema}
+        validationSchema={loginValidationSchema}
         onSubmit={handleSubmit}
       >
         {({
