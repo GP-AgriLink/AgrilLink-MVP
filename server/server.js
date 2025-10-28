@@ -10,6 +10,7 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./src/config/db.js";
 import farmerRoutes from "./src/routes/farmerRoutes.js";
+import productRoutes from "./src/routes/productRoutes.js";
 import { notFound, errorHandler } from "./src/middleware/errorMiddleware.js";
 import cors from "cors";
 
@@ -24,24 +25,25 @@ connectDB();
 const app = express();
 
 // To connect with client
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175",
+    ],
+    credentials: true,
+  })
+);
 
 // --- Middleware ---
 // This middleware is essential for parsing incoming request bodies with JSON payloads.
 app.use(express.json());
 
 // --- API Routes ---
-// Mount the farmer-related routes. Any request starting with '/api/farmers'
-// will be handled by the farmerRoutes router.
-app.use("/api/farmers", farmerRoutes);
 
-// A simple test route to confirm that the server is up and running.
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
+app.use("/api/farmers", farmerRoutes);
+app.use("/api/products", productRoutes);
 
 // --- Error Handling Middleware ---
 // Custom middleware to handle 404 Not Found errors.
