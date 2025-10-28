@@ -39,16 +39,16 @@ export const AuthProvider = ({ children }) => {
       });
 
       const userData = response.data;
-      
+
       // Save user to state and localStorage
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
-      
+
       return { success: true, user: userData };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.errors?.[0]?.msg ||
-                          'Login failed. Please try again.';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.errors?.[0]?.msg ||
+        'Login failed. Please try again.';
       return { success: false, error: errorMessage };
     }
   };
@@ -64,16 +64,16 @@ export const AuthProvider = ({ children }) => {
       });
 
       const userData = response.data;
-      
+
       // Automatically log the user in after registration
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
-      
+
       return { success: true, user: userData };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.errors?.[0]?.msg ||
-                          'Registration failed. Please try again.';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.errors?.[0]?.msg ||
+        'Registration failed. Please try again.';
       return { success: false, error: errorMessage };
     }
   };

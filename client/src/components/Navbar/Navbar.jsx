@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Logo from '../common/Logo';
 
@@ -7,6 +7,25 @@ function Navbar() {
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const profileDropdownRef = useRef(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -31,7 +50,7 @@ function Navbar() {
         <div className="flex items-center gap-3">
           {!user ? (
             // Show For Farmers dropdown with Login/Register when user is logged out
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <button
                 onClick={toggleDropdown}
                 className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 font-semibold text-white rounded-full px-6 py-2 transition-all hover:-translate-y-0.5 hover:shadow-md flex items-center gap-2"
@@ -74,7 +93,7 @@ function Navbar() {
             </div>
           ) : (
             // Show welcome message dropdown with profile options when user is logged in
-            <div className="relative">
+            <div className="relative" ref={profileDropdownRef}>
               <button
                 onClick={toggleProfileDropdown}
                 className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 font-semibold text-white rounded-full px-6 py-2 transition-all hover:-translate-y-0.5 hover:shadow-md flex items-center gap-2"

@@ -11,12 +11,17 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
-    "axios": "^1.12.2",
+    "@types/leaflet": "^1.9.21",
+    "axios": "^1.13.0",
+    "leaflet": "^1.9.4",
     "formik": "^2.4.6",
     "lucide-react": "^0.548.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.4",
+    "react-error-boundary": "^6.0.0",
+    "react-icons": "^5.5.0",
+    "react-leaflet": "^5.0.0",
     "yup": "^1.7.1"
   },
   "devDependencies": {
