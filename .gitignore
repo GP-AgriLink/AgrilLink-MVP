@@ -5,16 +5,39 @@ node_modules/
 **/node_modules/
 **/.pnp
 **/.pnp.js
+package.json
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
 
 # Client Dependencies
 client/node_modules/
 client/.pnp
 client/.pnp.js
+client/package.json
+client/package-lock.json
+client/yarn.lock
+client/pnpm-lock.yaml
+
+
+
+
 
 # Server Dependencies
 server/node_modules/
 server/.pnp
 server/.pnp.js
+server/package.json
+server/package-lock.json
+server/yarn.lock
+server/pnpm-lock.yaml
+
+
+
+
+
+#
 
 # ============================================
 # Environment Variables
