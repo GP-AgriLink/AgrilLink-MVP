@@ -11,6 +11,7 @@ import dotenv from "dotenv";
 import connectDB from "./src/config/db.js";
 import farmerRoutes from "./src/routes/farmerRoutes.js";
 import { notFound, errorHandler } from "./src/middleware/errorMiddleware.js";
+import cors from "cors";
 
 // --- Configuration ---
 // Load environment variables from the .env file into process.env
@@ -22,9 +23,16 @@ connectDB();
 // Initialize the Express application
 const app = express();
 
+// To connect with client
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
 // --- Middleware ---
 // This middleware is essential for parsing incoming request bodies with JSON payloads.
 app.use(express.json());
+app.use(cors());
 
 // --- API Routes ---
 // Mount the farmer-related routes. Any request starting with '/api/farmers'
