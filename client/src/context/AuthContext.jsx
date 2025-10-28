@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (email, password) => {
     try {
-      const API_URL = import.meta.env.VITE_APP_API_URL || '';
+      const API_URL = import.meta.env.VITE_APP_API_URL;
       const response = await axios.post(`${API_URL}/api/farmers/login`, {
         email,
         password,
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
   // Register function
   const register = async (farmName, email, password) => {
     try {
-      const API_URL = import.meta.env.VITE_APP_API_URL || '';
+      const API_URL = import.meta.env.VITE_APP_API_URL;
       const response = await axios.post(`${API_URL}/api/farmers/register`, {
         farmName,
         email,

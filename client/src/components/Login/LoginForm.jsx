@@ -1,67 +1,65 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import InputField from "./InputField";
+import React from "react";
+import {Link, useNavigate} from "react-router-dom";
+import {useAuth} from "../../context/AuthContext";
+import {Formik, Form} from "formik";
+import * as Yup from "yup";
 import Logo from "../common/Logo";
+import InputField from "./InputField";
 
 const LoginForm = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+  const {login} = useAuth();
+
+  const validationSchema = Yup.object({
+    email: Yup.string()
+      // Strong RFC 5322 for
+      .matches(
+        /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|hotmail|outlook|icloud|email)\.(com|net|org|edu|gov|eg)$/,
+        "Please enter a valid email address"
+      )
+      .required("Email is required"),
+    password: Yup.string()
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/,
+        "Please enter a valid password"
+      )
+      .min(6, "Password must be at least 6 characters long")
+      .required("Password is required"),
   });
 
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    // Clear error when user starts typing
-    if (error) setError("");
+  const initialValues = {
+    email: "",
+    password: "",
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    // Basic validation
-    if (!formData.email || !formData.password) {
-      setError("Please fill in all fields");
-      setLoading(false);
-      return;
-    }
-
+  const handleSubmit = async (values, {setSubmitting, setFieldError}) => {
     try {
-      const result = await login(formData.email, formData.password);
-      
+      const result = await login(values.email, values.password);
+
       if (result.success) {
-        // Redirect to home page on successful login
         navigate("/");
       } else {
-        setError(result.error);
+        if (result.error.toLowerCase().includes("not found")) {
+          setFieldError("email", "User not found");
+        } else {
+          setFieldError("password", result.error || "Login failed");
+        }
       }
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.");
+      setFieldError("email", "Unexpected error. Please try again later.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="relative w-full max-w-[576px] flex flex-col items-center gap-1 p-8 bg-white/95 border border-[rgba(167,243,208,0.7)] rounded-[44px] shadow-[rgb(255,255,255)_0px_24px_48px_-32px] text-[#064e3b]">
-      {/* Logo positioned at top */}
-      <div className="absolute -top-4 p-2 bg-white  rounded-full">
+      {/* Logo */}
+      <div className="absolute -top-4 p-2 bg-white rounded-full">
         <Logo />
       </div>
 
-      {/* Header Section */}
+      {/* Header */}
       <div className="flex flex-col items-center gap-4 w-full text-center mt-8">
         <span className="flex items-center px-4 py-1 bg-[#ecfdf5] text-[#047857] text-xs font-semibold tracking-[3.6px] uppercase rounded-full">
           Farmer Portal
@@ -70,67 +68,85 @@ const LoginForm = () => {
           Farmer Login
         </h1>
         <p className="text-sm leading-5 text-[rgba(6,78,59,0.75)] max-w-96">
-          Secure access to your farm storefront and logistics tools. Enter your credentials to continue.
+          Secure access to your farm storefront and logistics tools. Enter your
+          credentials to continue.
         </p>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="w-5/6" aria-label="Farmer login form">
-        {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-            {error}
-          </div>
+      {/* Formik Form */}
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+      >
+        {({
+          values,
+          errors,
+          touched,
+          handleChange,
+          handleBlur,
+          isSubmitting,
+        }) => (
+          <Form className="w-5/6" aria-label="Farmer login form">
+            <InputField
+              label="Email"
+              type="email"
+              name="email"
+              placeholder="your.email@example.com"
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={touched.email && errors.email}
+            />
+
+            <div className="mt-4">
+              <InputField
+                label="Password"
+                type="password"
+                name="password"
+                placeholder="••••••••"
+                value={values.password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.password && errors.password}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              aria-label="Log in to AgriLink"
+              className={`w-full mt-6 inline-flex items-center justify-center px-6 py-3 bg-[#10b981] text-white font-semibold text-center rounded-full transition-all shadow-[rgba(40,86,56,0.65)_0px_30px_80px_-40px] ${
+                isSubmitting
+                  ? "opacity-70 cursor-not-allowed"
+                  : "hover:bg-emerald-600 hover:shadow-lg"
+              }`}
+            >
+              {isSubmitting ? "Logging in..." : "Log In"}
+            </button>
+          </Form>
         )}
-        
-        <div>
-          <InputField
-            label="Email"
-            type="email"
-            name="email"
-            placeholder="your.email@example.com"
-            value={formData.email}
-            onChange={handleChange}
-          />
-        </div>
+      </Formik>
 
-        <div className="mt-4">
-          <InputField
-            label="Password"
-            type="password"
-            name="password"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={handleChange}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          aria-label="Log in to AgriLink"
-          className={`w-full mt-6 inline-flex items-center justify-center px-6 py-3 bg-[#10b981] text-white font-semibold text-center rounded-full transition-all shadow-[rgba(40,86,56,0.65)_0px_30px_80px_-40px] ${
-            loading
-              ? "opacity-70 cursor-not-allowed"
-              : "hover:bg-emerald-600 hover:shadow-lg"
-          }`}
-        >
-          {loading ? "Logging in..." : "Log In"}
-        </button>
-      </form>
-
-      {/* Sign Up Link */}
-      <p className="text-sm leading-5 text-[rgba(6,78,59,0.75)]">
+      {/* Footer Links */}
+      <p className="text-sm leading-5 text-[rgba(6,78,59,0.75)] mt-2">
         Don't have an account?{" "}
-        <Link to="/register" className="inline text-sm font-semibold leading-5 text-[#047857] hover:underline">
+        <Link
+          to="/register"
+          className="inline text-sm font-semibold leading-5 text-[#047857] hover:underline"
+        >
           Sign Up
         </Link>
         &nbsp;/&nbsp;
-        <Link to="/forgot-password" className="inline text-sm font-semibold leading-5 text-[#047857] hover:underline">
+        <Link
+          to="/forgot-password"
+          className="inline text-sm font-semibold leading-5 text-[#047857] hover:underline"
+        >
           Forgot Password?
         </Link>
       </p>
 
-      {/* Background gradient overlay */}
+      {/* Background */}
       <div className="absolute inset-0 -z-10 rounded-[48px] pointer-events-none bg-[radial-gradient(circle_at_center_top,rgba(35,97,69,0.15),rgba(0,0,0,0)_60%),radial-gradient(circle_at_center_bottom,rgba(52,120,88,0.12),rgba(0,0,0,0)_55%)]" />
     </div>
   );

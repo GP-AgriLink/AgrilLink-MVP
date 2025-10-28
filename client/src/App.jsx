@@ -16,12 +16,10 @@ function App() {
         <main className="main-content w-5/6 mx-auto flex-grow">
           <Routes>
             <Route path="/" element={
-              <>
-                <div className="container mx-auto px-6 py-12">
-                  <h1 className="text-4xl font-bold text-gray-900 mb-4">Discover Page</h1>
-                  <p className="text-lg text-gray-700">Welcome to AgriLink - Your connection to fresh local farms!</p>
-                </div>
-              </>
+              <div className="container mx-auto px-6 py-12">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">Discover Page</h1>
+                <p className="text-lg text-gray-700">Welcome to AgriLink - Your connection to fresh local farms!</p>
+              </div>
             } />
             <Route path="/about" element={
               <div className="container mx-auto px-6 py-12">
@@ -38,7 +36,7 @@ function App() {
             <Route path="/login" element={<FarmerLogin />} />
             <Route path="/register" element={<FarmerSignup />} />
             <Route path="/forgot-password" element={<ForgotPasswordFlow />} />
-            
+
             {/* Protected Routes */}
             <Route path="/edit-profile" element={
               <ProtectedRoute>
