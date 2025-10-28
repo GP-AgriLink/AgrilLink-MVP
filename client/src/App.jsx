@@ -1,4 +1,6 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Link } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
 import Navbar from './components/Navbar/Navbar'
@@ -7,6 +9,7 @@ import FarmerSignup from './pages/FarmRegister'
 import FarmerLogin from './pages/FarmLogin'
 import EditProfile from './pages/EditProfile';
 import ForgotPasswordFlow from './pages/ForgotPasswordFlow';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProfilePage from './pages/ProfilePage';
 
 function App() {
@@ -14,6 +17,7 @@ function App() {
     <AuthProvider>
       <div className="app min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex flex-col">
         <Navbar />
+        <ToastContainer />
         <main className="main-content w-5/6 mx-auto flex-grow">
           <Routes>
             <Route
@@ -34,12 +38,12 @@ function App() {
                       <p className="text-gray-600 mb-4">
                         List your farm and connect with customers directly.
                       </p>
-                      <a
-                        href="/register"
-                        className="inline-block bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700"
+                      <Link
+                        to="/register"
+                        className="inline-block bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
                       >
                         Get Started
-                      </a>
+                      </Link>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-md">
                       <h2 className="text-2xl font-semibold text-emerald-600 mb-4">
@@ -48,12 +52,12 @@ function App() {
                       <p className="text-gray-600 mb-4">
                         Discover and buy from local farms in your area.
                       </p>
-                      <a
-                        href="/discover"
-                        className="inline-block bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700"
+                      <Link
+                        to="/discover"
+                        className="inline-block bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
                       >
                         Browse Farms
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -69,11 +73,18 @@ function App() {
                 <h1 className="text-4xl font-bold text-gray-900">Contact Page</h1>
               </div>
             } />
+            <Route path="/discover" element={
+              <div className="container mx-auto px-6 py-12">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">Discover Farms</h1>
+                <p className="text-lg text-gray-700">Browse and discover local farms in your area.</p>
+              </div>
+            } />
 
             {/* Auth Routes */}
             <Route path="/login" element={<FarmerLogin />} />
             <Route path="/register" element={<FarmerSignup />} />
             <Route path="/forgot-password" element={<ForgotPasswordFlow />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
             {/* Protected Dashboard Routes */}
             <Route

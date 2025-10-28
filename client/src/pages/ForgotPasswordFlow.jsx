@@ -1,74 +1,118 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 import ForgotPasswordStep from "../components/ForgetPassword/ForgotPasswordStep";
 import CheckEmailStep from "../components/ForgetPassword/CheckEmailStep";
-import PasswordChangedStep from "../components/ForgetPassword/PasswordChangedStep";
+import { sanitizeEmail } from "../utils/validation";
+
+/**
+ * ForgotPasswordFlow Component
+ * 
+ * Security Implementation:
+ * - Always proceeds to step 2 regardless of whether email exists (prevents user enumeration)
+ * - Shows generic success messages that don't leak user existence information
+ * - Sanitizes email input before sending to backend
+ * - Uses toast notifications for smooth, non-intrusive user feedback
+ * - Implements proper error handling without exposing sensitive information
+ */
 
 export default function ForgotPasswordFlow() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000';
+
   const handleSendEmail = async (userEmail) => {
-    setError("");
-    console.log("Trying to send email...", userEmail);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    /*
+    setIsLoading(true);
+    
     try {
-      await axios.post('/api/farmers/forgot-password', { email: userEmail });
-      setEmail(userEmail);
-      setStep(2); 
+      // Sanitize email before sending
+      const sanitizedEmail = sanitizeEmail(userEmail);
+      
+      // Call backend forgot-password endpoint
+      await axios.post(`${API_URL}/api/farmers/forgot-password`, { 
+        email: sanitizedEmail 
+      });
+      
+      // Always move to step 2 and show success message
+      // This prevents leaking whether the email exists or not
+      setEmail(sanitizedEmail);
+      setStep(2);
+      
+      toast.success("If this email exists, a password reset link has been sent!", {
+        position: "top-right",
+        autoClose: 4000,
+      });
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || 'An error occurred. Please try again.');
+      console.error("Forgot password error:", err);
+      
+      // SECURITY: Always show the same generic message regardless of error
+      // This prevents attackers from discovering which emails are registered
+      setEmail(userEmail);
+      setStep(2);
+      
+      toast.info("If this email exists in our system, you will receive a reset link shortly.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    } finally {
+      setIsLoading(false);
     }
-    */
-
-    setEmail(userEmail);
-    setStep(2);
   };
 
   const handleResend = async () => {
-    console.log("Resending email to:", email);
+    if (!email) return;
+    
+    setIsLoading(true);
+    
+    try {
+      await axios.post(`${API_URL}/api/farmers/forgot-password`, { 
+        email 
+      });
+      
+      // SECURITY: Always show success message regardless of whether email exists
+      toast.success("Reset email sent! Please check your inbox.", {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    } catch (err) {
+      console.error("Resend error:", err);
+      
+      // SECURITY: Show generic message even on error
+      toast.info("If this email exists in our system, you will receive a reset link shortly.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleLogin = () => {
+  const handleBackToLogin = () => {
     navigate("/login");
   };
 
   return (
     <>
-      {step === 1 && <ForgotPasswordStep onNext={handleSendEmail} />}
+      {step === 1 && (
+        <ForgotPasswordStep 
+          onNext={handleSendEmail} 
+          isLoading={isLoading}
+          onBackToLogin={handleBackToLogin}
+        />
+      )}
       {step === 2 && (
         <CheckEmailStep
           email={email}
           onResend={handleResend}
-          onBack={() => setStep(1)}
+          onBackToLogin={handleBackToLogin}
+          isLoading={isLoading}
         />
       )}
-      {step === 3 && <PasswordChangedStep onLogin={handleLogin} />}
-
-      <div className="fixed bottom-4 right-4 flex gap-2 bg-white rounded-lg shadow-lg p-2 z-50">
-        <button
-          onClick={() => setStep(Math.max(1, step - 1))}
-          disabled={step === 1}
-          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 hover:bg-gray-300 transition"
-        >
-          Previous
-        </button>
-        <button
-          onClick={() => setStep(Math.min(3, step + 1))}
-          disabled={step === 3}
-          className="px-4 py-2 bg-emerald-500 text-white rounded disabled:opacity-50 hover:bg-emerald-600 transition"
-        >
-          Next
-        </button>
-        <span className="px-4 py-2 text-gray-600">Step {step}/3</span>
-      </div>
     </>
   );
 }
