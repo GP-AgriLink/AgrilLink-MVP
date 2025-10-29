@@ -11,6 +11,7 @@ import dotenv from "dotenv";
 import connectDB from "./src/config/db.js";
 import farmerRoutes from "./src/routes/farmerRoutes.js";
 import productRoutes from "./src/routes/productRoutes.js";
+import farmRoutes from "./src/routes/farmRoutes.js";
 import { notFound, errorHandler } from "./src/middleware/errorMiddleware.js";
 import cors from "cors";
 
@@ -44,6 +45,7 @@ app.use(express.json());
 
 app.use("/api/farmers", farmerRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/farms", farmRoutes);
 
 // --- Error Handling Middleware ---
 // Custom middleware to handle 404 Not Found errors.
