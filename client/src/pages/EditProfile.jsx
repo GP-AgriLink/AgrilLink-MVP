@@ -31,20 +31,29 @@ L.Icon.Default.mergeOptions({
 
 function LocationPicker({ setFormData }) {
   const [marker, setMarker] = useState(null);
+  const [selectedPosition, setSelectedPosition] = useState(null);
 
   useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
+      setSelectedPosition([lat, lng]);
       setMarker([lat, lng]);
+    },
+  });
+
+  useEffect(() => {
+    if (selectedPosition) {
+      const [lat, lng] = selectedPosition;
       setFormData((prev) => ({
         ...prev,
         location: { type: "Point", coordinates: [lat, lng] },
       }));
-    },
-  });
+    }
+  }, [selectedPosition]);
 
   return marker ? <Marker position={marker} /> : null;
 }
+
 
 function FlyToLocation({ coordinates }) {
   const map = useMapEvents({});
@@ -85,7 +94,7 @@ export default function EditProfile() {
     "Grains",
   ];
 
-  // ✅ Fetch profile data on load
+  // Fetch profile data on load
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -100,7 +109,7 @@ export default function EditProfile() {
         }
 
         const data = await getProfile();
-        
+
         if (data) {
           setFormData({
             ...getDefaultFormData(),
@@ -136,12 +145,12 @@ export default function EditProfile() {
         maxSize: 5 * 1024 * 1024, // 5MB
         allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'],
       });
-      
+
       if (!validation.valid) {
         toast.error(validation.error);
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData({ ...formData, avatarUrl: reader.result });
@@ -152,10 +161,10 @@ export default function EditProfile() {
 
   const handleAddSpecialty = (specialty) => {
     if (!specialty) return;
-    
+
     // Sanitize the specialty name
     const sanitizedSpecialty = sanitizeName(specialty);
-    
+
     if (!sanitizedSpecialty) return;
     if (formData.specialties.includes(sanitizedSpecialty)) return;
     if (formData.specialties.length >= 3) {
@@ -172,10 +181,10 @@ export default function EditProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const token = getAuthToken();
-      
+
       if (!token) {
         toast.error("Session expired. Please log in again.");
         clearAuthData();
@@ -194,7 +203,7 @@ export default function EditProfile() {
         location: formData.location,
         avatarUrl: formData.avatarUrl,
       };
-      
+
       // Validate coordinates
       if (sanitizedData.location?.coordinates) {
         const coordValidation = validateCoordinates(sanitizedData.location.coordinates);
@@ -206,7 +215,7 @@ export default function EditProfile() {
 
       const updatedProfile = await updateProfile(sanitizedData);
       console.log("Profile updated:", updatedProfile);
-      
+
       // Show success toast
       toast.success("Profile updated successfully!", {
         position: "top-right",
@@ -216,14 +225,14 @@ export default function EditProfile() {
         pauseOnHover: true,
         draggable: true,
       });
-      
+
       // Redirect to profile page after a short delay
       setTimeout(() => {
         navigate("/profile");
       }, 2000);
     } catch (error) {
       console.error("Error updating profile:", error);
-      
+
       if (error.response?.status === 401) {
         toast.error("Session expired. Please log in again.");
         clearAuthData();
@@ -241,7 +250,15 @@ export default function EditProfile() {
     const input = locationInputRef.current;
     if (input) {
       input.addEventListener("focus", () => setShowMap(true));
-      input.addEventListener("blur", () => setTimeout(() => setShowMap(false), 300));
+      document.addEventListener("click", (e) => {
+        if (
+          locationInputRef.current &&
+          !locationInputRef.current.contains(e.target) &&
+          !document.querySelector(".leaflet-container")?.contains(e.target)
+        ) {
+          setShowMap(false);
+        }
+      });
     }
   }, []);
 
