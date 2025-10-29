@@ -19,6 +19,11 @@ import {
   validateFile,
 } from "../utils/validation";
 
+const NAME_REGEX = /^[a-zA-Z\u0621-\u064A\s'-]{3,50}$/;
+const PHONE_REGEX = /^\+?\d{10,15}$/;
+const FARM_NAME_REGEX = /^(?!\s*$).{3,}$/;
+const FARM_BIO_REGEX = /^[\s\S]{10,500}$/;
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -49,7 +54,7 @@ function LocationPicker({ setFormData }) {
         location: { type: "Point", coordinates: [lat, lng] },
       }));
     }
-  }, [selectedPosition]);
+  }, [selectedPosition, setFormData]);
 
   return marker ? <Marker position={marker} /> : null;
 }
@@ -61,7 +66,7 @@ function FlyToLocation({ coordinates }) {
     if (coordinates) {
       map.flyTo(coordinates, 13, { duration: 1.2 });
     }
-  }, [coordinates]);
+  }, [coordinates, map]);
   return null;
 }
 
@@ -78,9 +83,19 @@ const getDefaultFormData = () => ({
   location: { type: "Point", coordinates: [30.0444, 31.2357] },
 });
 
+// Default errors structure
+const getDefaultErrors = () => ({
+  firstName: "",
+  lastName: "",
+  farmName: "",
+  phoneNumber: "",
+  farmBio: "",
+});
+
 export default function EditProfile() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(getDefaultFormData());
+  const [formErrors, setFormErrors] = useState(getDefaultErrors());
   const [showMap, setShowMap] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const locationInputRef = useRef(null);
@@ -94,7 +109,49 @@ export default function EditProfile() {
     "Grains",
   ];
 
-  // Fetch profile data on load
+  const validateField = (name, value) => {
+    let error = "";
+    const trimmedValue = value?.trim();
+
+    switch (name) {
+      case "firstName":
+      case "lastName":
+        if (trimmedValue && !NAME_REGEX.test(trimmedValue)) {
+          error = "Name must be 3-50 characters long and only contain letters, spaces, or hyphens.";
+        }
+        break;
+      case "farmName":
+        if (trimmedValue && !FARM_NAME_REGEX.test(trimmedValue)) {
+          error = "Farm name cannot be empty and must be at least 3 characters.";
+        }
+        break;
+      case "phoneNumber":
+        if (trimmedValue && !PHONE_REGEX.test(trimmedValue)) {
+          error = "Please enter a valid phone number (10-15 digits, optional +).";
+        }
+        break;
+      case "farmBio":
+        if (trimmedValue && !FARM_BIO_REGEX.test(trimmedValue)) {
+          error = "Bio must be between 10 and 500 characters.";
+        }
+        break;
+      default:
+        break;
+    }
+    return error;
+  };
+
+  const isFormValid = () => {
+    const requiredFields = ["firstName", "lastName", "farmName", "phoneNumber", "farmBio"];
+
+    const hasErrors = Object.values(formErrors).some((error) => error.length > 0);
+    const isAnyFieldEmpty = requiredFields.some((field) => !formData[field]?.trim());
+    const hasMinimumSpecialties = formData.specialties.length > 0;
+
+    return !hasErrors && !isAnyFieldEmpty && hasMinimumSpecialties;
+  };
+
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -111,12 +168,26 @@ export default function EditProfile() {
         const data = await getProfile();
 
         if (data) {
-          setFormData({
+          const initialData = {
             ...getDefaultFormData(),
             ...data,
             location: data.location || getDefaultFormData().location,
             specialties: Array.isArray(data.specialties) ? data.specialties : [],
+          };
+
+          Object.keys(initialData).forEach(key => {
+            if (initialData[key] === null || initialData[key] === undefined) {
+              initialData[key] = "";
+            }
           });
+
+          setFormData(initialData);
+
+          const initialErrors = {};
+          Object.keys(getDefaultErrors()).forEach(key => {
+            initialErrors[key] = validateField(key, initialData[key]);
+          });
+          setFormErrors(initialErrors);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -134,13 +205,19 @@ export default function EditProfile() {
   }, [navigate]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const trimmedValue = value;
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    const error = validateField(name, trimmedValue);
+    setFormErrors((prev) => ({ ...prev, [name]: error }));
   };
+
 
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file before processing
       const validation = validateFile(file, {
         maxSize: 5 * 1024 * 1024, // 5MB
         allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'],
@@ -162,7 +239,6 @@ export default function EditProfile() {
   const handleAddSpecialty = (specialty) => {
     if (!specialty) return;
 
-    // Sanitize the specialty name
     const sanitizedSpecialty = sanitizeName(specialty);
 
     if (!sanitizedSpecialty) return;
@@ -180,6 +256,17 @@ export default function EditProfile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!isFormValid()) {
+      toast.error("Please fill all required fields and correct any errors.");
+      const allErrors = {};
+      Object.keys(getDefaultErrors()).forEach(key => {
+        allErrors[key] = validateField(key, formData[key]);
+      });
+      setFormErrors(allErrors);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -192,7 +279,6 @@ export default function EditProfile() {
         return;
       }
 
-      // Sanitize all input data before submission
       const sanitizedData = {
         firstName: sanitizeName(formData.firstName || ''),
         lastName: sanitizeName(formData.lastName || ''),
@@ -204,7 +290,6 @@ export default function EditProfile() {
         avatarUrl: formData.avatarUrl,
       };
 
-      // Validate coordinates
       if (sanitizedData.location?.coordinates) {
         const coordValidation = validateCoordinates(sanitizedData.location.coordinates);
         if (!coordValidation.valid) {
@@ -216,7 +301,6 @@ export default function EditProfile() {
       const updatedProfile = await updateProfile(sanitizedData);
       console.log("Profile updated:", updatedProfile);
 
-      // Show success toast
       toast.success("Profile updated successfully!", {
         position: "top-right",
         autoClose: 2000,
@@ -226,7 +310,6 @@ export default function EditProfile() {
         draggable: true,
       });
 
-      // Redirect to profile page after a short delay
       setTimeout(() => {
         navigate("/profile");
       }, 2000);
@@ -250,7 +333,7 @@ export default function EditProfile() {
     const input = locationInputRef.current;
     if (input) {
       input.addEventListener("focus", () => setShowMap(true));
-      document.addEventListener("click", (e) => {
+      const clickOutsideHandler = (e) => {
         if (
           locationInputRef.current &&
           !locationInputRef.current.contains(e.target) &&
@@ -258,9 +341,48 @@ export default function EditProfile() {
         ) {
           setShowMap(false);
         }
-      });
+      };
+
+      document.addEventListener("click", clickOutsideHandler);
+
+      return () => {
+        document.removeEventListener("click", clickOutsideHandler);
+      }
     }
   }, []);
+
+  const getInputClasses = (fieldName) => {
+    const baseClasses = "w-full px-4 py-3 border rounded-lg outline-none transition duration-300 relative";
+    const hasError = formErrors[fieldName];
+    const isEmpty = !formData[fieldName]?.trim();
+    const isRequired = ["firstName", "lastName", "farmName", "phoneNumber", "farmBio"].includes(fieldName);
+
+    const isValid = !hasError && !isEmpty;
+
+    if (hasError) {
+      return `${baseClasses} border-red-500 focus:ring-2 focus:ring-red-500`;
+    } else if (isValid) {
+      return `${baseClasses} border-emerald-500 focus:ring-2 focus:ring-emerald-500 shadow-md shadow-emerald-500/10`;
+    } else {
+      return `${baseClasses} border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent`;
+    }
+  };
+
+  const ValidationStatus = ({ fieldName }) => {
+    const error = formErrors[fieldName];
+    const value = formData[fieldName]?.trim();
+    const isRequired = ["firstName", "lastName", "farmName", "phoneNumber", "farmBio"].includes(fieldName);
+
+    if (error) {
+      return <p className="text-red-500 text-xs mt-1 transition-opacity duration-300">{error}</p>;
+    }
+
+    if (!value && isRequired) {
+      return <p className="text-gray-500 text-xs mt-1">Required field</p>;
+    }
+
+    return null;
+  };
 
   return (
     <div className="min-h-screen py-8 px-4">
@@ -293,22 +415,24 @@ export default function EditProfile() {
                 <input
                   type="text"
                   name="firstName"
-                  value={formData.firstName}
+                  value={formData.firstName || ""}
                   onChange={handleChange}
                   placeholder="Enter first name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
+                  className={getInputClasses("firstName")}
                 />
+                <ValidationStatus fieldName="firstName" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
                 <input
                   type="text"
                   name="lastName"
-                  value={formData.lastName}
+                  value={formData.lastName || ""}
                   onChange={handleChange}
                   placeholder="Enter last name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
+                  className={getInputClasses("lastName")}
                 />
+                <ValidationStatus fieldName="lastName" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
@@ -326,35 +450,49 @@ export default function EditProfile() {
                 <input
                   type="tel"
                   name="phoneNumber"
-                  value={formData.phoneNumber}
+                  value={formData.phoneNumber || ""}
                   onChange={handleChange}
                   placeholder="Enter phone number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
+                  className={getInputClasses("phoneNumber")}
                 />
+                <ValidationStatus fieldName="phoneNumber" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Farm Name</label>
                 <input
                   type="text"
                   name="farmName"
-                  value={formData.farmName}
+                  value={formData.farmName || ""}
                   onChange={handleChange}
                   placeholder="Enter your farm name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
+                  className={getInputClasses("farmName")}
                 />
+                <ValidationStatus fieldName="farmName" />
               </div>
 
               {/* --- specialties --- */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Specialties (max 3)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Specialties (max 3)
+                  {formData.specialties.length === 0 && (
+                    <span className="text-red-500 text-xs ml-2"> (Required)</span>
+                  )}
+                </label>
                 <div className="relative">
                   <select
                     onChange={(e) => handleAddSpecialty(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
+                    className={`w-full px-4 py-3 border rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition ${formData.specialties.length === 0 ? 'border-red-500' : 'border-gray-300'}`}
+                    value=""
                   >
-                    <option value="">Select a specialty</option>
+                    <option value="" disabled>Select a specialty</option>
                     {allSpecialties.map((spec) => (
-                      <option key={spec} value={spec}>{spec}</option>
+                      <option
+                        key={spec}
+                        value={spec}
+                        disabled={formData.specialties.includes(spec)}
+                      >
+                        {spec}
+                      </option>
                     ))}
                   </select>
 
@@ -385,12 +523,13 @@ export default function EditProfile() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Farm Bio</label>
                 <textarea
                   name="farmBio"
-                  value={formData.farmBio}
+                  value={formData.farmBio || ""}
                   onChange={handleChange}
-                  placeholder="Tell us about your farm..."
+                  placeholder="Tell us about your farm (10-500 characters)..."
                   rows={3}
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
+                  className={getInputClasses("farmBio") + " resize-none"}
                 ></textarea>
+                <ValidationStatus fieldName="farmBio" />
               </div>
 
               {/* --- location --- */}
@@ -405,15 +544,16 @@ export default function EditProfile() {
                   readOnly
                   value={
                     formData.location?.coordinates
-                      ? `${formData.location.coordinates[0]}, ${formData.location.coordinates[1]}`
-                      : ""
+                      ? `Lat: ${formData.location.coordinates[0].toFixed(4)}, Lng: ${formData.location.coordinates[1].toFixed(4)}`
+                      : "Click to select location on map"
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition cursor-pointer"
                 />
+                <p className="text-gray-500 text-xs mt-1">Click the input to open the map and set your location.</p>
 
                 <div
                   className={`mt-3 overflow-hidden transition-all duration-500 ease-in-out ${showMap
-                    ? "opacity-100 scale-100 max-h-80"
+                    ? "opacity-100 scale-100 max-h-[320px]"
                     : "opacity-0 scale-95 max-h-0 pointer-events-none"
                     }`}
                 >
@@ -446,8 +586,6 @@ export default function EditProfile() {
                       />
                     )}
                   </MapContainer>
-
-
                 </div>
               </div>
             </div>
@@ -455,7 +593,7 @@ export default function EditProfile() {
             <div className="flex justify-center mt-6">
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !isFormValid()}
                 className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-lg shadow-md hover:from-emerald-600 hover:to-teal-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Saving..." : "Save Changes"}
