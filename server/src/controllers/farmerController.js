@@ -125,19 +125,23 @@ const getFarmerProfile = async (req, res) => {
  * @route   PUT /api/farmers/profile
  * @access  Private (requires a valid JWT)
  */
+
 const updateFarmerProfile = async (req, res) => {
-  // 1. Check for validation errors for the fields being updated.
+  // 1. Check for validation errors first.
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  // 2. Find the farmer from the database using the ID from the token (provided by 'protect' middleware).
-  const farmer = await Farmer.findById(req.farmer._id);
+  try {
+    // 2. The 'protect' middleware has already fetched the farmer's ID.
+    const farmer = await Farmer.findById(req.farmer._id);
 
-  if (farmer) {
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+
     // 3. Update fields only if they are provided in the request body.
-    // This allows for partial updates (e.g., changing only the bio).
     farmer.firstName = req.body.firstName || farmer.firstName;
     farmer.lastName = req.body.lastName || farmer.lastName;
     farmer.farmName = req.body.farmName || farmer.farmName;
@@ -145,12 +149,21 @@ const updateFarmerProfile = async (req, res) => {
     farmer.farmBio = req.body.farmBio || farmer.farmBio;
     farmer.avatarUrl = req.body.avatarUrl || farmer.avatarUrl;
     farmer.specialties = req.body.specialties || farmer.specialties;
-    farmer.location = req.body.location || farmer.location;
 
-    // 4. Save the updated document to the database.
+    // --- ROBUST LOCATION UPDATE LOGIC ---
+    // Explicitly check for 'coordinates' to ensure we only update
+    // the location when valid data is sent.
+    if (req.body.location && req.body.location.coordinates) {
+      farmer.location = {
+        type: "Point",
+        coordinates: req.body.location.coordinates,
+      };
+    }
+
+    // 4. Save the updated document.
     const updatedFarmer = await farmer.save();
 
-    // 5. Respond with the complete, updated farmer profile.
+    // 5. Respond with the complete, updated profile.
     res.json({
       _id: updatedFarmer._id,
       firstName: updatedFarmer.firstName,
@@ -163,8 +176,11 @@ const updateFarmerProfile = async (req, res) => {
       specialties: updatedFarmer.specialties,
       location: updatedFarmer.location,
     });
-  } else {
-    res.status(404).json({ message: "Farmer not found" });
+  } catch (error) {
+    // The try...catch block will catch any database errors
+    // (e.g., from .findById() or .save()) and send a generic server error.
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -200,7 +216,7 @@ const forgotPassword = async (req, res) => {
 
     // 4. Create the reset URL pointing to the frontend client
     // Use environment variable for frontend URL or fallback to localhost:5173
-    const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendURL = process.env.FRONTEND_URL || "http://localhost:5173";
     const resetURL = `${frontendURL}/reset-password/${resetToken}`;
 
     // 5. Send the email using nodemailer
