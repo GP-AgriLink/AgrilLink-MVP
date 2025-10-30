@@ -37,14 +37,16 @@ const farmerSchema = new mongoose.Schema(
     avatarUrl: { type: String },
     specialties: [String], // A multi-valued attribute for farm specialties
     location: {
-      type: { type: String, enum: ["Point"], default: "Point" },
-      coordinates: { type: [Number], index: "2dsphere" }, // [longitude, latitude]
+      type: { type: String, enum: ["Point"] },
+      coordinates: { type: [Number] }, // [longitude, latitude]
     },
   },
   {
     timestamps: true, // Mongoose automatically adds createdAt and updatedAt fields
   }
 );
+// This tells Mongoose to create a 2dsphere index on the 'location' field.
+farmerSchema.index({ location: "2dsphere" });
 
 /**
  * Mongoose middleware that runs before a 'save' operation.
