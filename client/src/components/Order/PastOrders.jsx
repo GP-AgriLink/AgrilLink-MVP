@@ -1,20 +1,11 @@
-// client/components/PastOrders.jsx
-
-const PastOrders = () => {
-    const pastOrders = [
-        { id: "2024-103", customer: "Miguel Rodriguez", total: 24.5, date: "Nov 27, 2024", status: "Completed" },
-        { id: "2024-104", customer: "Chelsea Nguyen", total: 17.85, date: "Nov 22, 2024", status: "Canceled" },
-        { id: "2024-105", customer: "Omar Hassan", total: 42.0, date: "Nov 29, 2024", status: "Completed" },
-    ];
-
-    const completedCount = pastOrders.filter((o) => o.status === "Completed").length;
-    const canceledCount = pastOrders.filter((o) => o.status === "Canceled").length;
+const PastOrders = ({ orders }) => {
+    const completedCount = orders.filter((o) => o.status === "Completed").length;
+    const canceledCount = orders.filter((o) => o.status === "Canceled").length;
 
     return (
         <section className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <h2 className="text-3xl font-semibold text-gray-800">Past Orders</h2>
-
                 <div className="flex flex-wrap items-center gap-3">
                     <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-medium">
                         {completedCount} Completed
@@ -41,7 +32,7 @@ const PastOrders = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {pastOrders.map((order, i) => (
+                        {orders.map((order, i) => (
                             <tr
                                 key={order.id}
                                 className={`border-t hover:bg-green-50 transition ${i % 2 === 0 ? "bg-white" : "bg-gray-50"
