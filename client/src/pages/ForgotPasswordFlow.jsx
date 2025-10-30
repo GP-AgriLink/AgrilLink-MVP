@@ -21,6 +21,12 @@ export default function ForgotPasswordFlow() {
     try {
       const sanitizedEmail = sanitizeEmail(userEmail);
       
+      if (!sanitizedEmail) {
+        toast.error("Please enter a valid email address");
+        setIsLoading(false);
+        return;
+      }
+      
       await axios.post(`${API_URL}/api/farmers/forgot-password`, { 
         email: sanitizedEmail 
       });
@@ -28,19 +34,19 @@ export default function ForgotPasswordFlow() {
       setEmail(sanitizedEmail);
       setStep(2);
       
-      toast.success("If this email exists, a password reset link has been sent!", {
+      toast.info("If this email is registered, you will receive a password reset link", {
         position: "top-right",
         autoClose: 4000,
       });
     } catch (err) {
       console.error("Forgot password error:", err);
       
-      setEmail(userEmail);
+      setEmail(sanitizeEmail(userEmail));
       setStep(2);
       
-      toast.info("If this email exists in our system, you will receive a reset link shortly.", {
+      toast.info("If this email is registered, you will receive a password reset link", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 4000,
       });
     } finally {
       setIsLoading(false);
@@ -57,16 +63,16 @@ export default function ForgotPasswordFlow() {
         email 
       });
       
-      toast.success("Reset email sent! Please check your inbox.", {
+      toast.info("If this email is registered, you will receive a password reset link", {
         position: "top-right",
         autoClose: 4000,
       });
     } catch (err) {
       console.error("Resend error:", err);
       
-      toast.info("If this email exists in our system, you will receive a reset link shortly.", {
+      toast.info("If this email is registered, you will receive a password reset link", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 4000,
       });
     } finally {
       setIsLoading(false);
