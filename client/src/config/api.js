@@ -48,10 +48,14 @@ apiClient.interceptors.request.use(
 
     const isModifyingRequest = config.method === 'post' || config.method === 'put';
     const isJsonContent = config.headers['Content-Type'] === 'application/json';
+    const skipSanitization = config.headers['X-Skip-Sanitization'] === 'true';
     
-    if (isModifyingRequest && config.data && isJsonContent) {
+    if (isModifyingRequest && config.data && isJsonContent && !skipSanitization) {
       config.data = sanitizeFormData(config.data);
     }
+
+    // Clean up internal headers
+    delete config.headers['X-Skip-Sanitization'];
 
     return config;
   },

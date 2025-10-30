@@ -289,6 +289,8 @@ export default function EditProfile() {
 
     setIsLoading(true);
 
+    let sanitizedData = null;
+
     try {
       const token = getAuthToken();
 
@@ -299,14 +301,13 @@ export default function EditProfile() {
         return;
       }
 
-      const sanitizedData = {
+      sanitizedData = {
         firstName: sanitizeName(formData.firstName || ''),
         lastName: sanitizeName(formData.lastName || ''),
         farmName: sanitizeName(formData.farmName || ''),
         phoneNumber: sanitizePhone(formData.phoneNumber || ''),
         farmBio: sanitizeTextArea(formData.farmBio || ''),
         specialties: sanitizeArray(formData.specialties),
-        location: formData.location,
         avatarUrl: formData.avatarUrl,
       };
 
@@ -317,13 +318,17 @@ export default function EditProfile() {
           : `+20${cleanedPhone}`;
       }
 
-      if (sanitizedData.location?.coordinates) {
-        const coordValidation = validateCoordinates(sanitizedData.location.coordinates);
-        if (!coordValidation.valid) {
+      if (formData.location?.coordinates) {
+        const coordValidation = validateCoordinates(formData.location.coordinates);
+        if (coordValidation.valid) {
+          sanitizedData.location = { coordinates: coordValidation.sanitized };
+        } else {
           toast.warning("Invalid location coordinates. Using default location");
-          sanitizedData.location.coordinates = coordValidation.sanitized;
+          sanitizedData.location = { coordinates: coordValidation.sanitized };
         }
       }
+
+      console.log("Sending profile update:", sanitizedData);
 
       const updatedProfile = await updateProfile(sanitizedData);
       console.log("Profile updated:", updatedProfile);
@@ -342,6 +347,8 @@ export default function EditProfile() {
       }, REDIRECT_DELAY);
     } catch (error) {
       console.error("Error updating profile:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Sanitized data sent:", sanitizedData);
 
       if (error.response?.status === 401) {
         toast.error("Session expired. Please log in again");

@@ -16,12 +16,21 @@ export const getProfile = async () => {
 
 /**
  * Update farmer profile
- * @param {object} payload - Profile data to update
+ * @param {object} payload - Profile data to update (pre-sanitized)
  * @returns {Promise<object>} Updated profile data
  */
 export const updateProfile = async (payload) => {
   try {
-    const response = await apiClient.put(API_ENDPOINTS.farmers.profile, payload);
+    const response = await apiClient.put(
+      API_ENDPOINTS.farmers.profile, 
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Skip-Sanitization': 'true'
+        }
+      }
+    );
     return response.data;
   } catch (error) {
     console.error('Error updating profile:', error);
