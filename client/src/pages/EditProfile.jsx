@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import avatarPlaceholder from "../assets/avatar-placeholder.svg";
 import { Camera, X } from "lucide-react";
+
+const REDIRECT_DELAY = 1000;
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -309,7 +311,7 @@ export default function EditProfile() {
 
       setTimeout(() => {
         navigate("/dashboard", { state: { activeView: "profile" } });
-      }, 1000);
+      }, REDIRECT_DELAY);
     } catch (error) {
       console.error("Error updating profile:", error);
 

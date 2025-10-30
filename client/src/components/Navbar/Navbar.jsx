@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import Logo from '../common/Logo';
 import avatarPlaceholder from '../../assets/avatar-placeholder.svg';
 
+const ORDER_COUNT_REFRESH_INTERVAL = 600000;
+
 function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -62,7 +64,7 @@ function Navbar() {
       fetchOrdersCount();
     }
     
-    const interval = setInterval(fetchOrdersCount, 600000);
+    const interval = setInterval(fetchOrdersCount, ORDER_COUNT_REFRESH_INTERVAL);
     
     const handleStorageChange = (e) => {
       if (e.key === 'incomingOrdersCount' && e.newValue) {

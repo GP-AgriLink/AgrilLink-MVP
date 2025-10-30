@@ -18,21 +18,25 @@ export const API_ENDPOINTS = {
   orders: {
     myOrders: '/api/orders/myorders',
     create: '/api/orders',
-    update: '/api/orders',
+    updateStatus: (orderId) => `/api/orders/${orderId}/status`,
+    base: '/api/orders',
   },
   products: {
     list: '/api/products',
     create: '/api/products',
     update: '/api/products',
+    base: '/api/products',
   },
 };
+
+const REQUEST_TIMEOUT = 10000;
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: REQUEST_TIMEOUT,
 });
 
 apiClient.interceptors.request.use(
@@ -42,15 +46,17 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    if ((config.method === 'post' || config.method === 'put') && config.data) {
-      if (config.headers['Content-Type'] === 'application/json') {
-        config.data = sanitizeFormData(config.data);
-      }
+    const isModifyingRequest = config.method === 'post' || config.method === 'put';
+    const isJsonContent = config.headers['Content-Type'] === 'application/json';
+    
+    if (isModifyingRequest && config.data && isJsonContent) {
+      config.data = sanitizeFormData(config.data);
     }
 
     return config;
   },
   (error) => {
+    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
@@ -58,20 +64,26 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      console.warn('Session expired or invalid token');
+    const status = error.response?.status;
+
+    if (status === 401) {
+      console.warn('Authentication failed: Session expired or invalid token');
       clearAuthData();
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
     }
 
-    if (error.response?.status === 403) {
-      console.error('Access forbidden');
+    if (status === 403) {
+      console.error('Authorization failed: Access forbidden');
     }
 
-    if (error.response?.status >= 500) {
-      console.error('Server error:', error.response.data);
+    if (status && status >= 500) {
+      console.error('Server error:', error.response?.data || 'Internal server error');
+    }
+
+    if (!error.response) {
+      console.error('Network error: Unable to reach server');
     }
 
     return Promise.reject(error);

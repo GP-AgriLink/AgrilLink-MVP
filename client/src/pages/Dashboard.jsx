@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ProfileHeader from '../components/Profile/ProfileHeader';
 import ProfileForm from '../components/Profile/ProfileForm';
 import AvatarUpload from '../components/Profile/AvatarUpload';
@@ -35,7 +35,6 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
-  const hasProcessedNavState = useRef(false);
   const lastNavStateRef = useRef(null);
 
   useEffect(() => {
@@ -228,9 +227,9 @@ function Dashboard() {
 
   return (
     <div className="box-border" style={{ minHeight: 'calc(100vh - 200px)' }}>
-      <div className="w-full lg:w-5/6 mx-auto px-4 sm:px-6 py-6">
-        <div className="flex flex-col lg:flex-row gap-5">
-          <aside className="w-full lg:w-64 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/70 p-5 min-h-[90vh]">
+      <div className="w-full mx-auto px-4 sm:px-6 py-6">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className="min-w-72 max-w-80 flex-shrink-0 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-emerald-100/70 p-5 min-h-[90vh]">
             <h2 className="text-sm font-bold text-emerald-800 mb-5 tracking-[4.2px] uppercase" style={{ fontFamily: 'Inter, -apple-system, Roboto, Helvetica, sans-serif', letterSpacing: '4.2px' }}>
               Farmer Portal
             </h2>
