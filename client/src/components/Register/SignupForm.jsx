@@ -35,21 +35,27 @@ const SignupForm = () => {
         initialValues={{
           farmName: "",
           email: "",
+          phoneNumber: "",
           password: "",
           confirmPassword: "",
         }}
         validationSchema={registrationValidationSchema}
         onSubmit={async (values, {setSubmitting, setFieldError}) => {
           try {
-            // Sanitize input before sending
             const sanitizedFarmName = sanitizeName(values.farmName);
             const sanitizedEmail = sanitizeEmail(values.email);
             const sanitizedPassword = values.password.trim();
             
+            const cleanedPhone = values.phoneNumber.replace(/[\s-]/g, '');
+            const phoneWithCountryCode = cleanedPhone.startsWith('0') 
+              ? `+20${cleanedPhone.substring(1)}`
+              : `+20${cleanedPhone}`;
+            
             const result = await register(
               sanitizedFarmName,
               sanitizedEmail,
-              sanitizedPassword
+              sanitizedPassword,
+              phoneWithCountryCode
             );
 
             if (result.success) {
@@ -102,6 +108,19 @@ const SignupForm = () => {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={touched.email && errors.email}
+              />
+            </div>
+
+            <div className="mt-4">
+              <InputField
+                label="Phone Number"
+                name="phoneNumber"
+                type="tel"
+                placeholder="01012345678"
+                value={values.phoneNumber}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched.phoneNumber && errors.phoneNumber}
               />
             </div>
 

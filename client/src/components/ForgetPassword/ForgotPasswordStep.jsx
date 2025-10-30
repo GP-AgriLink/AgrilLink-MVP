@@ -9,7 +9,12 @@ import { sanitizeEmail } from '../../utils/validation';
 const validationSchema = Yup.object({
   email: Yup.string()
     .transform(sanitizeEmail)
-    .email('Please enter a valid email address')
+    .matches(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Invalid email format"
+    )
+    .email('Invalid email format')
+    .max(255, "Email exceeds maximum length")
     .required('Email is required'),
 });
 
@@ -86,7 +91,7 @@ const ForgotPasswordStep = ({ onNext, isLoading, onBackToLogin }) => {
         <div className="bg-blue-50 border-l-4 border-blue-400 rounded-lg p-2 mb-4">
           <p className="text-xs text-blue-700 flex items-center gap-2">
             <span>🔒</span>
-            <span>We protect your privacy - no account info will be revealed</span>
+            <span>Your privacy is protected - account existence will not be revealed</span>
           </p>
         </div>
 

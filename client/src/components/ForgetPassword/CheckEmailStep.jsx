@@ -64,10 +64,10 @@ const CheckEmailStep = ({ email, onResend, onBackToLogin, isLoading }) => {
               </div>
               
               <h2 className="text-2xl md:text-3xl font-bold mb-3">
-                Email Sent!
+                Check Your Email
               </h2>
               <p className="text-emerald-50 text-sm md:text-base max-w-xs mx-auto">
-                Check your inbox and follow the instructions to reset your password securely.
+                Follow the instructions in your email to securely reset your password
               </p>
             </div>
           </div>
@@ -86,10 +86,10 @@ const CheckEmailStep = ({ email, onResend, onBackToLogin, isLoading }) => {
 
         {/* Header - More compact */}
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1.5">
-          Check your email!
+          Check your email
         </h1>
         <p className="text-gray-600 text-xs mb-0.5">
-          If an account exists, we've sent a reset link to
+          If an account exists for this email, we've sent a reset link to
         </p>
         <p className="font-semibold text-emerald-600 text-sm mb-3">
           {email}
@@ -98,7 +98,7 @@ const CheckEmailStep = ({ email, onResend, onBackToLogin, isLoading }) => {
         {/* Info Box - More compact */}
         <div className="bg-emerald-50 border-l-4 border-emerald-400 rounded-lg p-2 mb-3">
           <p className="text-xs text-gray-700">
-            If the account exists, you'll receive a reset link. Link expires in <span className="font-semibold text-emerald-600">10 min</span>.
+            If the account exists, you'll receive a reset link. Link expires in <span className="font-semibold text-emerald-600">10 minutes</span>.
           </p>
         </div>
 
@@ -146,9 +146,9 @@ const CheckEmailStep = ({ email, onResend, onBackToLogin, isLoading }) => {
           </p>
           <div className="grid md:grid-cols-2 gap-x-3 gap-y-0.5">
             <p className="text-xs text-gray-600">• Check spam folder</p>
-            <p className="text-xs text-gray-600">• Verify email address</p>
-            <p className="text-xs text-gray-600">• Wait a few minutes</p>
-            <p className="text-xs text-gray-600">• Unregistered? No link</p>
+            <p className="text-xs text-gray-600">• Verify email address is correct</p>
+            <p className="text-xs text-gray-600">• Wait a few minutes for delivery</p>
+            <p className="text-xs text-gray-600">• Email not registered? No link sent</p>
           </div>
         </div>
 

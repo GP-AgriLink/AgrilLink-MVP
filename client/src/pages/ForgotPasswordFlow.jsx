@@ -7,17 +7,6 @@ import ForgotPasswordStep from "../components/ForgetPassword/ForgotPasswordStep"
 import CheckEmailStep from "../components/ForgetPassword/CheckEmailStep";
 import { sanitizeEmail } from "../utils/validation";
 
-/**
- * ForgotPasswordFlow Component
- * 
- * Security Implementation:
- * - Always proceeds to step 2 regardless of whether email exists (prevents user enumeration)
- * - Shows generic success messages that don't leak user existence information
- * - Sanitizes email input before sending to backend
- * - Uses toast notifications for smooth, non-intrusive user feedback
- * - Implements proper error handling without exposing sensitive information
- */
-
 export default function ForgotPasswordFlow() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -30,34 +19,34 @@ export default function ForgotPasswordFlow() {
     setIsLoading(true);
     
     try {
-      // Sanitize email before sending
       const sanitizedEmail = sanitizeEmail(userEmail);
       
-      // Call backend forgot-password endpoint
+      if (!sanitizedEmail) {
+        toast.error("Please enter a valid email address");
+        setIsLoading(false);
+        return;
+      }
+      
       await axios.post(`${API_URL}/api/farmers/forgot-password`, { 
         email: sanitizedEmail 
       });
       
-      // Always move to step 2 and show success message
-      // This prevents leaking whether the email exists or not
       setEmail(sanitizedEmail);
       setStep(2);
       
-      toast.success("If this email exists, a password reset link has been sent!", {
+      toast.info("If this email is registered, you will receive a password reset link", {
         position: "top-right",
         autoClose: 4000,
       });
     } catch (err) {
       console.error("Forgot password error:", err);
       
-      // SECURITY: Always show the same generic message regardless of error
-      // This prevents attackers from discovering which emails are registered
-      setEmail(userEmail);
+      setEmail(sanitizeEmail(userEmail));
       setStep(2);
       
-      toast.info("If this email exists in our system, you will receive a reset link shortly.", {
+      toast.info("If this email is registered, you will receive a password reset link", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 4000,
       });
     } finally {
       setIsLoading(false);
@@ -74,18 +63,16 @@ export default function ForgotPasswordFlow() {
         email 
       });
       
-      // SECURITY: Always show success message regardless of whether email exists
-      toast.success("Reset email sent! Please check your inbox.", {
+      toast.info("If this email is registered, you will receive a password reset link", {
         position: "top-right",
         autoClose: 4000,
       });
     } catch (err) {
       console.error("Resend error:", err);
       
-      // SECURITY: Show generic message even on error
-      toast.info("If this email exists in our system, you will receive a reset link shortly.", {
+      toast.info("If this email is registered, you will receive a password reset link", {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 4000,
       });
     } finally {
       setIsLoading(false);

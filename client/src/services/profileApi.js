@@ -1,67 +1,61 @@
-import axios from "axios";
-import { getAuthToken, clearAuthData } from "../context/AuthContext";
-import { sanitizeFormData } from "../utils/validation";
+import apiClient, { API_ENDPOINTS } from '../config/api';
 
-const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000';
-
-const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
-  headers: { "Content-Type": "application/json" },
-});
-
-// Add auth token to every request if it exists
-api.interceptors.request.use((config) => {
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  
-  // Sanitize request data for POST and PUT requests
-  if ((config.method === 'post' || config.method === 'put') && config.data) {
-    if (config.headers['Content-Type'] === 'application/json') {
-      config.data = sanitizeFormData(config.data);
-    }
-  }
-  
-  return config;
-});
-
-// Handle 401 errors globally
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token is invalid or expired
-      clearAuthData();
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
-
+/**
+ * Get farmer profile
+ * @returns {Promise<object>} Profile data
+ */
 export const getProfile = async () => {
   try {
-    const res = await api.get("/farmers/profile");
-    return res.data;
+    const response = await apiClient.get(API_ENDPOINTS.farmers.profile);
+    return response.data;
   } catch (error) {
-    console.error("Error fetching profile:", error);
+    console.error('Error fetching profile:', error);
     throw error;
   }
 };
 
+/**
+ * Update farmer profile
+ * @param {object} payload - Profile data to update
+ * @returns {Promise<object>} Updated profile data
+ */
 export const updateProfile = async (payload) => {
-  // Data will be sanitized by the request interceptor
-  const res = await api.put("/farmers/profile", payload);
-  return res.data;
+  try {
+    const response = await apiClient.put(API_ENDPOINTS.farmers.profile, payload);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    throw error;
+  }
 };
 
+/**
+ * Upload profile picture
+ * @param {File} file - Image file to upload
+ * @returns {Promise<object>} Response with avatarUrl
+ */
 export const uploadAvatar = async (file) => {
-  const form = new FormData();
-  form.append("profilePicture", file);
-  const res = await api.post("/farmers/profile/upload-picture", form, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data;
+  try {
+    const formData = new FormData();
+    formData.append('profilePicture', file);
+    
+    const response = await apiClient.post(
+      API_ENDPOINTS.farmers.uploadPicture,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error uploading avatar:', error);
+    throw error;
+  }
 };
 
-export default api;
+export default {
+  getProfile,
+  updateProfile,
+  uploadAvatar,
+};
+

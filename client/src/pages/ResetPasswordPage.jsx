@@ -7,18 +7,20 @@ import { toast } from 'react-toastify';
 import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import Logo from '../components/common/Logo';
 
+import { sanitizeString } from '../utils/validation';
+
 const validationSchema = Yup.object({
   password: Yup.string()
-    .min(6, 'Password must be at least 6 characters long')
-    .max(128, 'Password is too long')
+    .min(6, 'Password must be at least 6 characters')
+    .max(128, 'Password exceeds maximum length')
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/,
-      'Password must contain uppercase, lowercase, number, and special character'
+      'Password must include uppercase, lowercase, number, and special character (@$!%*?&)'
     )
     .required('Password is required'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password'), null], 'Passwords must match')
-    .required('Confirm password is required'),
+    .required('Please confirm your password'),
 });
 
 export default function ResetPasswordPage() {
@@ -32,9 +34,9 @@ export default function ResetPasswordPage() {
   const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
-    if (!token) {
-      toast.error('Invalid reset link');
-      navigate('/login');
+    if (!token || token.length < 10) {
+      toast.error('Invalid password reset link');
+      navigate('/forgot-password');
     }
   }, [token, navigate]);
 
@@ -42,45 +44,53 @@ export default function ResetPasswordPage() {
     setIsLoading(true);
 
     try {
-      // Call backend reset-password endpoint
+      const sanitizedPassword = sanitizeString(values.password.trim());
+      
+      if (!sanitizedPassword || sanitizedPassword.length < 6) {
+        toast.error("Invalid password format");
+        setIsLoading(false);
+        return;
+      }
+      
       const response = await axios.put(
         `${API_URL}/api/farmers/reset-password/${token}`,
-        { password: values.password }
+        { password: sanitizedPassword }
       );
 
       setIsSuccess(true);
       
-      toast.success("Password reset successfully! Redirecting to login...", {
+      toast.success("Password reset successful! Redirecting to login...", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
       });
 
-      // Redirect to login after 3 seconds
       setTimeout(() => {
         navigate('/login');
       }, 3000);
     } catch (err) {
       console.error('Reset password error:', err);
 
-      // Provide user-friendly error messages
       if (err.response?.status === 400) {
-        toast.error("This password reset link has expired or is invalid. Please request a new one.", {
-          position: "top-right",
-          autoClose: 5000,
-        });
-        
-        // Redirect to forgot password page after showing error
-        setTimeout(() => {
-          navigate('/forgot-password');
-        }, 3000);
-      } else if (err.response?.status === 500) {
-        toast.error("Server error. Please try again later.", {
+        toast.error("Password reset link has expired. Please request a new one", {
           position: "top-right",
           autoClose: 4000,
         });
+        
+        setTimeout(() => {
+          navigate('/forgot-password');
+        }, 2000);
+      } else if (err.response?.status === 404) {
+        toast.error("Invalid reset link. Please request a new one", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+        
+        setTimeout(() => {
+          navigate('/forgot-password');
+        }, 2000);
       } else {
-        toast.error("Failed to reset password. Please try again or request a new reset link.", {
+        toast.error("Unable to reset password. Please try again", {
           position: "top-right",
           autoClose: 4000,
         });

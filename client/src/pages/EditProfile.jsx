@@ -1,8 +1,9 @@
-// client/pages/EditProfile.jsx
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import avatarPlaceholder from "../assets/avatar-placeholder.svg";
 import { Camera, X } from "lucide-react";
+
+const REDIRECT_DELAY = 1000;
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -17,6 +18,7 @@ import {
   sanitizeArray,
   validateCoordinates,
   validateFile,
+  validateEgyptianPhone,
 } from "../utils/validation";
 
 const NAME_REGEX = /^[a-zA-Z\u0621-\u064A\s'-]{3,50}$/;
@@ -70,7 +72,6 @@ function FlyToLocation({ coordinates }) {
   return null;
 }
 
-// Default form data structure
 const getDefaultFormData = () => ({
   firstName: "",
   lastName: "",
@@ -83,7 +84,6 @@ const getDefaultFormData = () => ({
   location: { type: "Point", coordinates: [30.0444, 31.2357] },
 });
 
-// Default errors structure
 const getDefaultErrors = () => ({
   firstName: "",
   lastName: "",
@@ -116,23 +116,45 @@ export default function EditProfile() {
     switch (name) {
       case "firstName":
       case "lastName":
-        if (trimmedValue && !NAME_REGEX.test(trimmedValue)) {
-          error = "Name must be 3-50 characters long and only contain letters, spaces, or hyphens.";
+        if (!trimmedValue) {
+          return "";
+        }
+        if (trimmedValue.length < 2) {
+          error = "Name must be at least 2 characters";
+        } else if (trimmedValue.length > 50) {
+          error = "Name exceeds maximum length (50 characters)";
+        } else if (!/^[A-Za-z\s'-]+$/.test(trimmedValue)) {
+          error = "Name can only contain letters, spaces, hyphens, and apostrophes";
         }
         break;
       case "farmName":
-        if (trimmedValue && !FARM_NAME_REGEX.test(trimmedValue)) {
-          error = "Farm name cannot be empty and must be at least 3 characters.";
+        if (!trimmedValue) {
+          return "";
+        }
+        if (trimmedValue.length < 3) {
+          error = "Farm name must be at least 3 characters";
+        } else if (trimmedValue.length > 100) {
+          error = "Farm name exceeds maximum length (100 characters)";
+        } else if (!/^[A-Za-z\s'-]+$/.test(trimmedValue)) {
+          error = "Farm name can only contain letters, spaces, hyphens, and apostrophes";
         }
         break;
       case "phoneNumber":
-        if (trimmedValue && !PHONE_REGEX.test(trimmedValue)) {
-          error = "Please enter a valid phone number (10-15 digits, optional +).";
+        if (!trimmedValue) {
+          return "";
+        }
+        if (!validateEgyptianPhone(trimmedValue)) {
+          error = "Please enter a valid Egyptian mobile number (e.g., 01012345678)";
         }
         break;
       case "farmBio":
-        if (trimmedValue && !FARM_BIO_REGEX.test(trimmedValue)) {
-          error = "Bio must be between 10 and 500 characters.";
+        if (!trimmedValue) {
+          return "";
+        }
+        if (trimmedValue.length < 10) {
+          error = "Bio must be at least 10 characters";
+        } else if (trimmedValue.length > 1000) {
+          error = "Bio exceeds maximum length (1000 characters)";
         }
         break;
       default:
@@ -158,7 +180,6 @@ export default function EditProfile() {
         const token = getAuthToken();
 
         if (!token) {
-          console.log("No token found, redirecting to login");
           toast.error("Please log in to edit your profile");
           clearAuthData();
           navigate("/login");
@@ -192,11 +213,11 @@ export default function EditProfile() {
       } catch (error) {
         console.error("Error fetching profile:", error);
         if (error.response?.status === 401) {
-          toast.error("Session expired. Please log in again.");
+          toast.error("Session expired. Please log in again");
           clearAuthData();
           navigate("/login");
         } else {
-          toast.error("Failed to load profile data. Please try again.");
+          toast.error("Failed to load profile data");
         }
       }
     };
@@ -206,11 +227,10 @@ export default function EditProfile() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const trimmedValue = value;
 
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    const error = validateField(name, trimmedValue);
+    const error = validateField(name, value);
     setFormErrors((prev) => ({ ...prev, [name]: error }));
   };
 
@@ -258,7 +278,7 @@ export default function EditProfile() {
     e.preventDefault();
 
     if (!isFormValid()) {
-      toast.error("Please fill all required fields and correct any errors.");
+      toast.error("Please fill all required fields correctly");
       const allErrors = {};
       Object.keys(getDefaultErrors()).forEach(key => {
         allErrors[key] = validateField(key, formData[key]);
@@ -273,7 +293,7 @@ export default function EditProfile() {
       const token = getAuthToken();
 
       if (!token) {
-        toast.error("Session expired. Please log in again.");
+        toast.error("Session expired. Please log in again");
         clearAuthData();
         navigate("/login");
         return;
@@ -290,10 +310,17 @@ export default function EditProfile() {
         avatarUrl: formData.avatarUrl,
       };
 
+      if (sanitizedData.phoneNumber) {
+        const cleanedPhone = sanitizedData.phoneNumber.replace(/[\s-]/g, '');
+        sanitizedData.phoneNumber = cleanedPhone.startsWith('0') 
+          ? `+20${cleanedPhone.substring(1)}`
+          : `+20${cleanedPhone}`;
+      }
+
       if (sanitizedData.location?.coordinates) {
         const coordValidation = validateCoordinates(sanitizedData.location.coordinates);
         if (!coordValidation.valid) {
-          toast.warning("Invalid location coordinates. Using default location.");
+          toast.warning("Invalid location coordinates. Using default location");
           sanitizedData.location.coordinates = coordValidation.sanitized;
         }
       }
@@ -311,17 +338,17 @@ export default function EditProfile() {
       });
 
       setTimeout(() => {
-        navigate("/profile");
-      }, 2000);
+        navigate("/dashboard", { state: { activeView: "profile" } });
+      }, REDIRECT_DELAY);
     } catch (error) {
       console.error("Error updating profile:", error);
 
       if (error.response?.status === 401) {
-        toast.error("Session expired. Please log in again.");
+        toast.error("Session expired. Please log in again");
         clearAuthData();
         navigate("/login");
       } else {
-        const errorMsg = error.response?.data?.message || "Failed to update profile. Please try again.";
+        const errorMsg = error.response?.data?.message || "Failed to update profile. Please try again";
         toast.error(errorMsg);
       }
     } finally {
@@ -395,7 +422,7 @@ export default function EditProfile() {
               <img
                 src={
                   formData.avatarUrl ||
-                  "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                  "https://cdn-icons-png.flaticon.com/512/149/149071.png" || avatarPlaceholder
                 }
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover ring-4 ring-emerald-100"
@@ -452,7 +479,7 @@ export default function EditProfile() {
                   name="phoneNumber"
                   value={formData.phoneNumber || ""}
                   onChange={handleChange}
-                  placeholder="Enter phone number"
+                  placeholder="01012345678"
                   className={getInputClasses("phoneNumber")}
                 />
                 <ValidationStatus fieldName="phoneNumber" />
@@ -525,7 +552,7 @@ export default function EditProfile() {
                   name="farmBio"
                   value={formData.farmBio || ""}
                   onChange={handleChange}
-                  placeholder="Tell us about your farm (10-500 characters)..."
+                  placeholder="Tell us about your farm (10-1000 characters)..."
                   rows={3}
                   className={getInputClasses("farmBio") + " resize-none"}
                 ></textarea>
@@ -549,7 +576,7 @@ export default function EditProfile() {
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition cursor-pointer"
                 />
-                <p className="text-gray-500 text-xs mt-1">Click the input to open the map and set your location.</p>
+                <p className="text-gray-500 text-xs mt-1">Click the input to select your farm location on the map</p>
 
                 <div
                   className={`mt-3 overflow-hidden transition-all duration-500 ease-in-out ${showMap

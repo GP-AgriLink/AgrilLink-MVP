@@ -10,7 +10,8 @@ import FarmerLogin from './pages/FarmLogin'
 import EditProfile from './pages/EditProfile';
 import ForgotPasswordFlow from './pages/ForgotPasswordFlow';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import ProfilePage from './pages/ProfilePage';
+import NotFound from './pages/NotFound';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
       <div className="app min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex flex-col">
         <Navbar />
         <ToastContainer />
-        <main className="main-content w-5/6 mx-auto flex-grow">
+        <main className="main-content w-full lg:w-5/6 mx-auto flex-grow px-4 sm:px-6 lg:px-0">
           <Routes>
             <Route
               path="/"
@@ -80,21 +81,20 @@ function App() {
               </div>
             } />
 
-            {/* Auth Routes */}
             <Route path="/login" element={<FarmerLogin />} />
             <Route path="/register" element={<FarmerSignup />} />
             <Route path="/forgot-password" element={<ForgotPasswordFlow />} />
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-            {/* Protected Dashboard Routes */}
             <Route
-              path="/profile"
+              path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <ProfilePage />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
+
             <Route path="/edit-profile" element={
               <ProtectedRoute>
                 <EditProfile />
@@ -105,6 +105,8 @@ function App() {
                 <h1 className="text-4xl font-bold text-gray-900">Shopping Cart</h1>
               </div>
             } />
+
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />
