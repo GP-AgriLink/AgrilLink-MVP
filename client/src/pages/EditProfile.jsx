@@ -1,7 +1,6 @@
-// client/pages/EditProfile.jsx
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import avatarPlaceholder from "../assets/avatar-placeholder.svg";
 import { Camera, X } from "lucide-react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -70,7 +69,6 @@ function FlyToLocation({ coordinates }) {
   return null;
 }
 
-// Default form data structure
 const getDefaultFormData = () => ({
   firstName: "",
   lastName: "",
@@ -83,7 +81,6 @@ const getDefaultFormData = () => ({
   location: { type: "Point", coordinates: [30.0444, 31.2357] },
 });
 
-// Default errors structure
 const getDefaultErrors = () => ({
   firstName: "",
   lastName: "",
@@ -311,8 +308,8 @@ export default function EditProfile() {
       });
 
       setTimeout(() => {
-        navigate("/profile");
-      }, 2000);
+        navigate("/dashboard", { state: { activeView: "profile" } });
+      }, 1000);
     } catch (error) {
       console.error("Error updating profile:", error);
 
@@ -395,7 +392,7 @@ export default function EditProfile() {
               <img
                 src={
                   formData.avatarUrl ||
-                  "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                  "https://cdn-icons-png.flaticon.com/512/149/149071.png" || avatarPlaceholder
                 }
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover ring-4 ring-emerald-100"
