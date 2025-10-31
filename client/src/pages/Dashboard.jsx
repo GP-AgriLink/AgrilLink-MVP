@@ -5,6 +5,7 @@ import ProfileForm from '../components/Profile/ProfileForm';
 import AvatarUpload from '../components/Profile/AvatarUpload';
 import { getProfile } from '../services/profileApi';
 import { getAuthToken, clearAuthData } from '../context/AuthContext';
+import OrdersPage from './OrdersPage';
 
 const getDefaultProfile = () => ({
   id: "",
@@ -72,7 +73,7 @@ function Dashboard() {
   const fetchProfile = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const token = getAuthToken();
 
@@ -99,7 +100,7 @@ function Dashboard() {
       console.error("Error fetching profile:", err);
       const errorMsg = err.response?.data?.message || "Failed to fetch profile";
       setError(errorMsg);
-      
+
       if (err.response?.status === 401) {
         clearAuthData();
         navigate("/login");
@@ -120,10 +121,8 @@ function Dashboard() {
   ];
 
   const MyOrders = () => (
-    <div className="text-center py-12 px-6 min-h-[400px] flex flex-col items-center justify-center">
-      <div className="text-6xl mb-4">📦</div>
-      <h2 className="text-2xl font-bold text-emerald-900 mb-2">My Orders</h2>
-      <p className="text-gray-600">Orders component coming soon...</p>
+    <div className="text-center py-12 min-h-[400px] flex flex-col" >
+      <OrdersPage />
     </div>
   );
 
@@ -238,11 +237,10 @@ function Dashboard() {
                 <button
                   key={item.id}
                   onClick={() => setActiveComponent(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all ${
-                    activeComponent === item.id
-                      ? 'bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 text-white shadow-md hover:-translate-y-0.5'
-                      : 'text-emerald-900 hover:bg-emerald-50'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all ${activeComponent === item.id
+                    ? 'bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 text-white shadow-md hover:-translate-y-0.5'
+                    : 'text-emerald-900 hover:bg-emerald-50'
+                    }`}
                 >
                   {getIcon(item.icon)}
                   <span>{item.label}</span>
