@@ -1,35 +1,95 @@
+// client/pages/OrderCard.jsx
+
 import { useState } from "react";
 
 const OrderCard = ({ order, onOrderUpdate }) => {
     const [fadeOut, setFadeOut] = useState(false);
-    const [status, setStatus] = useState(order.status);
+    const orderData = order.order || order.data || order;
+    const [status, setStatus] = useState(orderData.status);
 
-    const handleClick = (newStatus) => {
+    const formatNumber = (num) => {
+        return typeof num === "number" && !isNaN(num) ? num.toFixed(2) : "0.00";
+    };
+
+    const getValidDate = (obj) => {
+        if (!obj) return null;
+        if (obj.createdAt) return obj.createdAt;
+        if (obj.order?.createdAt) return obj.order.createdAt;
+        if (obj.data?.createdAt) return obj.data.createdAt;
+        return null;
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return "Unknown Date";
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return "Unknown Date";
+            return date.toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        } catch {
+            return "Unknown Date";
+        }
+    };
+
+    const orderDate = getValidDate(order);
+
+    const handleClick = async (newStatus) => {
         if (newStatus === "Delivery") {
             setStatus("Delivery");
         } else {
             setFadeOut(true);
-            setTimeout(() => {
-                onOrderUpdate(order.id, newStatus);
+            setTimeout(async () => {
+                try {
+                    await onOrderUpdate(orderData._id || orderData.id, newStatus);
+                } catch (err) {
+                    console.error("Failed to update order:", err);
+                    alert("Failed to update order status. Please try again.");
+                }
             }, 300);
         }
     };
 
+    const cardStyle =
+        status === "Delivery"
+            ? "bg-gray-50 border-gray-200"
+            : "bg-white border-green-100";
+
+    const items = orderData.items || orderData.orderItems || [];
+    const customer = orderData.customer || orderData.customerName || "Unknown Customer";
+    const phone = orderData.phone || orderData.customerPhone || "No Phone";
+    const total = orderData.total || orderData.totalAmount || 0;
+    const date = orderData.createdAt || orderData.date;
+
     return (
         <div
-            className={`bg-white shadow-lg rounded-2xl p-6 border border-green-100 transition-all duration-300 flex flex-col justify-between
+            className={`${cardStyle} shadow-lg rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between border
             ${fadeOut ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}
         >
             {/* Header */}
             <div>
                 <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm text-gray-500 font-medium">Order #{order.id}</p>
+                    <p className="text-sm text-gray-500 font-medium">
+                        {date
+                            ? new Date(date).toLocaleDateString("en-GB", {
+                                dateStyle: "medium",
+                            })
+                            : "Unknown Date"}
+                    </p>
+
                     <span className="bg-green-50 text-green-700 text-sm px-3 py-1 rounded-md font-semibold">
-                        Total ${order.total.toFixed(2)}
+                        Total ${formatNumber(total)}
                     </span>
                 </div>
 
-                <h3 className="font-semibold text-left text-lg text-gray-800 mb-1">
+                <h3
+                    className={`font-semibold text-left text-lg mb-1 ${status === "Delivery" ? "text-green-700" : "text-gray-800"
+                        }`}
+                >
                     {status === "Incoming"
                         ? "Incoming Order"
                         : status === "Delivery"
@@ -37,25 +97,45 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                             : status}
                 </h3>
 
-                <p className="text-gray-700 font-medium pb-2">{order.customer}</p>
-                <p className="text-sm text-gray-500 mb-4">{order.phone}</p>
+                <p className="text-gray-700 font-medium pb-2">{customer}</p>
+                <p className="text-sm text-gray-500 mb-4">{phone}</p>
 
                 {/* Items */}
-                <div className="bg-green-50 rounded-xl p-4 mb-4 border border-green-100">
+                <div
+                    className={`${status === "Delivery"
+                        ? "bg-gray-100 border-green-200"
+                        : "bg-green-50 border-green-100"
+                        } rounded-xl p-4 mb-4 border`}
+                >
                     <p className="text-sm font-semibold text-left text-gray-700 mb-2 tracking-wide">
-                        Items
+                        Items ({items.length})
                     </p>
-                    {order.items.map((item, index) => (
-                        <div
-                            key={index}
-                            className="flex justify-between text-sm text-gray-600 py-1"
-                        >
-                            <span>
-                                {item.qty} × {item.name}
-                            </span>
-                            <span>${item.price.toFixed(2)}</span>
-                        </div>
-                    ))}
+
+                    {items.map((item, index) => {
+
+                        const formattedItem = {
+                            name: item.name || "Unknown Item",
+                            qty: item.qty,
+                            price: item.price,
+                        };
+
+                        return (
+                            <div
+                                key={index}
+                                className="flex justify-between text-sm text-gray-600 py-1 border-b border-gray-100 last:border-none"
+                            >
+                                <div className="flex flex-col text-left">
+                                    <span className="font-medium">{formattedItem.name}</span>
+                                    <span className="text-xs text-gray-500">
+                                        {formattedItem.qty} pcs × ${formatNumber(formattedItem.price)}
+                                    </span>
+                                </div>
+                                <span className="font-semibold text-gray-700">
+                                    ${formatNumber(formattedItem.qty * formattedItem.price)}
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 

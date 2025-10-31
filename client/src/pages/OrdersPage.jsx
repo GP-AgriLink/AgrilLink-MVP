@@ -1,54 +1,115 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import IncomingOrders from "../components/Order/IncomingOrders";
 import PastOrders from "../components/Order/PastOrders";
 
 const OrdersPage = () => {
-    const [incomingOrders, setIncomingOrders] = useState([
-        {
-            id: "2024-001",
-            customer: "John Appleseed",
-            phone: "+1 (555) 123-4567",
-            total: 19.26,
-            items: [
-                { name: "Heirloom Tomatoes", qty: 3, price: 14.97 },
-                { name: "Forest Kale", qty: 2, price: 6.58 },
-            ],
-            status: "Incoming",
-        },
-        {
-            id: "2024-002",
-            customer: "Priya Patel",
-            phone: "+1 (555) 444-2211",
-            total: 32.75,
-            items: [
-                { name: "Pastured Eggs", qty: 2, price: 11.0 },
-                { name: "Sun Sweet Corn", qty: 10, price: 7.5 },
-            ],
-            status: "Incoming",
-        },
-    ]);
+    const [incomingOrders, setIncomingOrders] = useState([]);
+    const [pastOrders, setPastOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const [pastOrders, setPastOrders] = useState([
-        { id: "2024-103", customer: "Miguel Rodriguez", total: 24.5, date: "Nov 27, 2024", status: "Completed" },
-        { id: "2024-104", customer: "Chelsea Nguyen", total: 17.85, date: "Nov 22, 2024", status: "Canceled" },
-        { id: "2024-105", customer: "Omar Hassan", total: 42.0, date: "Nov 29, 2024", status: "Completed" },
-    ]);
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const { data } = await axios.get("/api/orders/myorders", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
 
-    const handleOrderUpdate = (id, newStatus) => {
-        const updatedOrders = incomingOrders.filter((o) => o.id !== id);
-        const movedOrder = incomingOrders.find((o) => o.id === id);
-        if (movedOrder) {
-            setIncomingOrders(updatedOrders);
-            setPastOrders((prev) => [
+                console.log("✅ API Response:", data);
+
+                const ordersArray = Array.isArray(data)
+                    ? data
+                    : Array.isArray(data.orders)
+                        ? data.orders
+                        : [];
+
+                const incoming = ordersArray.filter(o => o.status === "Incoming");
+                const past = ordersArray.filter(
+                    o => o.status === "Completed" || o.status === "Canceled"
+                );
+
+                setIncomingOrders(
+                    incoming.map(o => ({
+                        id: o._id,
+                        customer: o.customerName,
+                        phone: o.customerPhone || "N/A",
+                        total: o.totalAmount,
+                        items: o.orderItems.map(i => ({
+                            name: i.name,
+                            qty: i.quantity,
+                            price: i.unitPrice,
+                        })),
+                        status: o.status,
+                        date: new Date(o.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                        }),
+                    }))
+                );
+
+                setPastOrders(
+                    past.map(o => ({
+                        id: o._id,
+                        customer: o.customerName,
+                        total: o.totalAmount,
+                        status: o.status,
+                        date: new Date(o.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                        }),
+                    }))
+                );
+            } catch (err) {
+                console.error("Error fetching orders:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrders();
+    }, []);
+
+    const handleOrderUpdate = async (id, newStatus) => {
+        try {
+            const token = localStorage.getItem("token");
+            const { data: updatedOrder } = await axios.put(
+                `/api/orders/${id}/status`,
+                { status: newStatus },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setIncomingOrders(prev => prev.filter(o => o.id !== id));
+
+            setPastOrders(prev => [
                 ...prev,
                 {
-                    ...movedOrder,
-                    status: newStatus,
-                    date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+                    id: updatedOrder._id,
+                    customer: updatedOrder.customerName,
+                    total: updatedOrder.totalAmount,
+                    status: updatedOrder.status,
+                    date: new Date(updatedOrder.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                    }),
                 },
             ]);
+        } catch (err) {
+            console.error("Error updating order status:", err);
+            alert("Failed to update order status. Please try again.");
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <p className="text-gray-600 text-lg font-medium">Loading orders...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen md:px-12 lg:px-20">
