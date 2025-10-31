@@ -123,7 +123,7 @@ const OrdersPage = () => {
 
     return (
         <div className="min-h-screen px-4 sm:px-8 md:px-12 lg:px-20 xl:px-16 py-4">
-            <div className="max-w-[1400px] mx-auto flex flex-col gap-10">
+            <div className="max-w-[1600px] mx-auto flex flex-col gap-10">
                 <IncomingOrders orders={incomingOrders} onOrderUpdate={handleOrderUpdate} />
                 <PastOrders orders={pastOrders} />
             </div>
