@@ -36,7 +36,7 @@ const IncomingOrders = ({ orders, onOrderUpdate }) => {
             {orders.length > 0 ? (
                 <>
                     <div
-                        className={`grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 3xl:grid-cols-2 4xl:grid-cols-2 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"
+                        className={`grid gap-8 justify-items-center grid-cols-1 md:grid-cols-2 xl:grid-cols-2 3xl:grid-cols-3 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"
                             }`}
                     >
                         {currentOrders.map((order) => (

@@ -52,8 +52,9 @@ const OrderCard = ({ order, onOrderUpdate }) => {
     const date = orderData.createdAt || orderData.date;
 
     return (
+        // constrain width so cards don't get too wide on very large screens
         <div
-            className={`${cardStyle} shadow-lg rounded-2xl p-5 sm:p-6 transition-all duration-300 flex flex-col justify-between border ${fadeOut ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+            className={`w-full max-w-[420px] 3xl:max-w-[520px] ${cardStyle} shadow-lg rounded-2xl p-5 sm:p-6 transition-all duration-300 flex flex-col justify-between border ${fadeOut ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
                 }`}
         >
             <div>
