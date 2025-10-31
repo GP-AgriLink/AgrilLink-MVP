@@ -11,9 +11,9 @@ export default function CartBanner({ totalDue, farmName }) {
         <h1 className="text-4xl font-bold text-gray-900 mt-2 mb-4">
           Pay on delivery with confidence.
         </h1>
-        <p className="text-gray-600 mb-4">
+        <p className="text-emerald-900 mb-4">
           Pay on delivery to {farmName || 'Agrilink Corp'}. Your total due is{' '}
-          <span className="font-bold text-gray-900">${totalDue.toFixed(2)}</span>.
+          <span className="font-medium text-emerald-900">${totalDue.toFixed(2)}</span>.
         </p>
         <div className="flex gap-2">
           
@@ -25,8 +25,8 @@ export default function CartBanner({ totalDue, farmName }) {
       </div>
       
       <div className="bg-white/60 backdrop-blur-sm border border-emerald-200 rounded-xl p-6 text-center">
-        
-        <span className="text-emerald-700 text-sm uppercase tracking-wide">
+
+        <span className="font-bold text-emerald-700 text-sm uppercase tracking-wide">
           AMOUNT DUE
         </span>
 
@@ -34,7 +34,7 @@ export default function CartBanner({ totalDue, farmName }) {
           ${totalDue.toFixed(2)}
         </div>
         
-        <p className="text-emerald-600 text-xs">
+        <p className="text-emerald-700 text-xs">
           Pay the farmer directly when your order is delivered.
         </p>
         

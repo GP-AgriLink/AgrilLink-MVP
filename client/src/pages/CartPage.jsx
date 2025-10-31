@@ -1,54 +1,52 @@
-
 import { useState, useEffect, useMemo } from 'react';
+import axios from 'axios'; 
+import { useNavigate } from 'react-router-dom'; 
 import CartBanner from '../components/cart/CartBanner';
 import CartSummary from '../components/cart/CartSummary';
-import CartCheckoutBox from '../components/cart/CartCheckoutBox';
+import ContactForm from '../components/cart/ContactForm'; 
 
 // Mock data (if localStorage is empty)
 const MOCK_CART_DATA = [
-  { id: 1, name: 'Pressed Apple Cider', qty: 1, unit: '64OZ', price: 11.00 },
-  { id: 2, name: 'Peach Preserves', qty: 1, unit: 'JAR', price: 8.50 },
-  { id: 3, name: 'Honeycrisp Apples', qty: 1, unit: 'LB', price: 3.99 },
+  { id: 1, name: 'Pressed Apple Cider', qty: 1, unit: '64OZ', price: 11.00, productId: 'prod_abc' },
+  { id: 2, name: 'Peach Preserves', qty: 1, unit: 'JAR', price: 8.50, productId: 'prod_xyz' },
+  { id: 3, name: 'Honeycrisp Apples', qty: 1, unit: 'LB', price: 3.99, productId: 'prod_123' },
 ];
 
 const MOCK_FARM_DATA = {
+  _id: "671a...", 
   name: "Agrilink Corp"
 };
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState([]);
   const [farmData, setFarmData] = useState({});
+  const navigate = useNavigate(); // For redirecting after success
 
-  // 1. Fetch data from localStorage on component mount
+  const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const storedCart = localStorage.getItem('cart');
     const items = storedCart ? JSON.parse(storedCart) : MOCK_CART_DATA;
     setCartItems(items);
-    
     setFarmData(MOCK_FARM_DATA);
-
-    // If localStorage was empty, populate it with mock data
     if (!storedCart) {
       localStorage.setItem('cart', JSON.stringify(MOCK_CART_DATA));
     }
   }, []);
 
-  // 2. Helper function to update both state and localStorage
   const updateCart = (newCartItems) => {
     setCartItems(newCartItems);
     localStorage.setItem('cart', JSON.stringify(newCartItems));
   };
 
-  // 3. Calculate total price and total item count
-  // useMemo ensures this only recalculates when cartItems changes
   const [totalDue, totalItems] = useMemo(() => {
     const total = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
     const count = cartItems.reduce((acc, item) => acc + item.qty, 0);
     return [total, count];
   }, [cartItems]);
 
-  // 4. Cart handler functions (passed down to CartSummary)
-  
   const handleIncreaseQty = (itemId) => {
     const newCartItems = cartItems.map(item => 
       item.id === itemId ? { ...item, qty: item.qty + 1 } : item
@@ -58,14 +56,12 @@ export default function CartPage() {
 
   const handleDecreaseQty = (itemId) => {
     const itemToDecrease = cartItems.find(item => item.id === itemId);
-
     let newCartItems;
     if (itemToDecrease.qty > 1) {
       newCartItems = cartItems.map(item => 
         item.id === itemId ? { ...item, qty: item.qty - 1 } : item
       );
     } else {
-      // Remove the item from the cart
       newCartItems = cartItems.filter(item => item.id !== itemId);
     }
     updateCart(newCartItems);
@@ -73,6 +69,54 @@ export default function CartPage() {
 
   const handleClearCart = () => {
     updateCart([]);
+  };
+
+  // 6. New function to handle the order submission
+  const handleSubmitOrder = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    // Format cart items to match the API requirements
+    const orderItems = cartItems.map(item => ({
+      productId: item.productId || item.id, // Use productId if available, fallback to id
+      name: item.name,
+      quantity: item.qty,
+      unitPrice: item.price
+    }));
+
+    // Build the final order object
+    const orderData = {
+      farmerId: farmData._id,
+      customerName: fullName,
+      customerPhone: phoneNumber,
+      orderItems: orderItems
+    };
+
+    console.log('Sending Order:', orderData);
+
+    try {
+      // The actual API call
+      const response = await axios.post('/api/orders', orderData);
+      
+      console.log('Order confirmed:', response.data);
+      alert('Order Confirmed!');
+      
+      // Clear cart and redirect
+      updateCart([]); // Empty the cart
+      // (You might want to redirect to a "Thank You" page)
+      // navigate('/order-success'); 
+
+    } catch (err) {
+      console.error(err);
+      // Handle out-of-stock errors
+      if (err.response && err.response.data && err.response.data.message) {
+        alert(`Error: ${err.response.data.message}`);
+      } else {
+        alert('Failed to place order. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,7 +142,14 @@ export default function CartPage() {
           </div>
           
           <div className="lg:col-span-1 h-fit">
-            <CartCheckoutBox total={totalDue} />
+            <ContactForm
+              fullName={fullName}
+              setFullName={setFullName}
+              phoneNumber={phoneNumber}
+              setPhoneNumber={setPhoneNumber}
+              onSubmit={handleSubmitOrder}
+              loading={loading}
+            />
           </div>
 
         </div>
