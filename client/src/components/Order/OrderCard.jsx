@@ -1,46 +1,33 @@
 // client/pages/OrderCard.jsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const OrderCard = ({ order, onOrderUpdate }) => {
     const [fadeOut, setFadeOut] = useState(false);
     const orderData = order.order || order.data || order;
-    const [status, setStatus] = useState(orderData.status);
+
+    const initialStatus = orderData.status === "Ready for Delivery" ? "Delivery" : orderData.status;
+    const [status, setStatus] = useState(initialStatus);
+
+    useEffect(() => {
+        // لو حصل refresh أو تغير في props، نخلي الكارد يعكس الحالة الحقيقية من الباك
+        if (orderData.status === "Ready for Delivery") setStatus("Delivery");
+        else setStatus(orderData.status);
+    }, [orderData.status]);
 
     const formatNumber = (num) => {
         return typeof num === "number" && !isNaN(num) ? num.toFixed(2) : "0.00";
     };
 
-    const getValidDate = (obj) => {
-        if (!obj) return null;
-        if (obj.createdAt) return obj.createdAt;
-        if (obj.order?.createdAt) return obj.order.createdAt;
-        if (obj.data?.createdAt) return obj.data.createdAt;
-        return null;
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return "Unknown Date";
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return "Unknown Date";
-            return date.toLocaleString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        } catch {
-            return "Unknown Date";
-        }
-    };
-
-    const orderDate = getValidDate(order);
-
     const handleClick = async (newStatus) => {
         if (newStatus === "Delivery") {
             setStatus("Delivery");
+            try {
+                await onOrderUpdate(orderData._id || orderData.id, "Ready for Delivery");
+            } catch (err) {
+                console.error("Failed to update order:", err);
+                alert("Failed to update order status. Please try again.");
+            }
         } else {
             setFadeOut(true);
             setTimeout(async () => {
@@ -112,7 +99,6 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                     </p>
 
                     {items.map((item, index) => {
-
                         const formattedItem = {
                             name: item.name || "Unknown Item",
                             qty: item.qty,

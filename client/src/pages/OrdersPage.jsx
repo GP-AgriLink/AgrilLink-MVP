@@ -1,3 +1,5 @@
+// client/pages/OrdersPage.jsx
+
 import { useState, useEffect } from "react";
 import axios from "axios";
 import IncomingOrders from "../components/Order/IncomingOrders";
@@ -16,7 +18,7 @@ const OrdersPage = () => {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
-                console.log("✅ API Response:", data);
+                console.log("API IS :", data);
 
                 const ordersArray = Array.isArray(data)
                     ? data
@@ -24,7 +26,7 @@ const OrdersPage = () => {
                         ? data.orders
                         : [];
 
-                const incoming = ordersArray.filter(o => o.status === "Incoming");
+                const incoming = ordersArray.filter(o => o.status === "Incoming" || o.status === "Ready for Delivery");
                 const past = ordersArray.filter(
                     o => o.status === "Completed" || o.status === "Canceled"
                 );
@@ -40,7 +42,7 @@ const OrdersPage = () => {
                             qty: i.quantity,
                             price: i.unitPrice,
                         })),
-                        status: o.status,
+                        status: o.status === "Ready for Delivery" ? "Delivery" : "Incoming",
                         date: new Date(o.createdAt).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -81,22 +83,32 @@ const OrdersPage = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            setIncomingOrders(prev => prev.filter(o => o.id !== id));
+            if (newStatus === "Completed" || newStatus === "Canceled") {
+                setIncomingOrders(prev => prev.filter(o => o.id !== id));
 
-            setPastOrders(prev => [
-                ...prev,
-                {
-                    id: updatedOrder._id,
-                    customer: updatedOrder.customerName,
-                    total: updatedOrder.totalAmount,
-                    status: updatedOrder.status,
-                    date: new Date(updatedOrder.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                    }),
-                },
-            ]);
+                setPastOrders(prev => [
+                    ...prev,
+                    {
+                        id: updatedOrder._id,
+                        customer: updatedOrder.customerName,
+                        total: updatedOrder.totalAmount,
+                        status: updatedOrder.status,
+                        date: new Date(updatedOrder.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                        }),
+                    },
+                ]);
+            } else {
+                setIncomingOrders(prev =>
+                    prev.map(o =>
+                        o.id === id
+                            ? { ...o, status: newStatus === "Ready for Delivery" ? "Delivery" : newStatus }
+                            : o
+                    )
+                );
+            }
         } catch (err) {
             console.error("Error updating order status:", err);
             alert("Failed to update order status. Please try again.");
