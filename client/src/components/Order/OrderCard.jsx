@@ -1,12 +1,12 @@
 // client/components/Order/OrderCard.jsx
-
 import { useState, useEffect } from "react";
 
 const OrderCard = ({ order, onOrderUpdate }) => {
     const [fadeOut, setFadeOut] = useState(false);
     const orderData = order.order || order.data || order;
 
-    const initialStatus = orderData.status === "Ready for Delivery" ? "Delivery" : orderData.status;
+    const initialStatus =
+        orderData.status === "Ready for Delivery" ? "Delivery" : orderData.status;
     const [status, setStatus] = useState(initialStatus);
 
     useEffect(() => {
@@ -14,9 +14,8 @@ const OrderCard = ({ order, onOrderUpdate }) => {
         else setStatus(orderData.status);
     }, [orderData.status]);
 
-    const formatNumber = (num) => {
-        return typeof num === "number" && !isNaN(num) ? num.toFixed(2) : "0.00";
-    };
+    const formatNumber = (num) =>
+        typeof num === "number" && !isNaN(num) ? num.toFixed(2) : "0.00";
 
     const handleClick = async (newStatus) => {
         if (newStatus === "Delivery") {
@@ -46,15 +45,16 @@ const OrderCard = ({ order, onOrderUpdate }) => {
             : "bg-white border-green-100";
 
     const items = orderData.items || orderData.orderItems || [];
-    const customer = orderData.customer || orderData.customerName || "Unknown Customer";
+    const customer =
+        orderData.customer || orderData.customerName || "Unknown Customer";
     const phone = orderData.phone || orderData.customerPhone || "No Phone";
     const total = orderData.total || orderData.totalAmount || 0;
     const date = orderData.createdAt || orderData.date;
 
     return (
         <div
-            className={`${cardStyle} shadow-lg rounded-2xl p-5 sm:p-6 transition-all duration-300 flex flex-col justify-between border
-            ${fadeOut ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}
+            className={`${cardStyle} shadow-lg rounded-2xl p-5 sm:p-6 transition-all duration-300 flex flex-col justify-between border ${fadeOut ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                }`}
         >
             <div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
@@ -69,7 +69,8 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                 </div>
 
                 <h3
-                    className={`font-semibold text-left text-lg mb-1 ${status === "Delivery" ? "text-green-700" : "text-gray-800"}`}
+                    className={`font-semibold text-left text-lg mb-1 ${status === "Delivery" ? "text-green-700" : "text-gray-800"
+                        }`}
                 >
                     {status === "Incoming"
                         ? "Incoming Order"
@@ -83,8 +84,8 @@ const OrderCard = ({ order, onOrderUpdate }) => {
 
                 <div
                     className={`${status === "Delivery"
-                        ? "bg-gray-100 border-green-200"
-                        : "bg-green-50 border-green-100"
+                            ? "bg-gray-100 border-green-200"
+                            : "bg-green-50 border-green-100"
                         } rounded-xl p-4 mb-4 border`}
                 >
                     <p className="text-sm font-semibold text-left text-gray-700 mb-2 tracking-wide">
@@ -119,13 +120,13 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                 </button>
                 <button
                     onClick={() => handleClick("Delivery")}
-                    className="w-full bg-[#13C191] text-white py-2.5 rounded-lg font-semibold border border-[#13C191] shadow-sm hover:bg-white hover:text-[#13C191] transition"
+                    className="w-full bg-[#13C191] text-white py-2.5 rounded-lg font-semibold hover:opacity-90 transition"
                 >
                     Delivery
                 </button>
                 <button
                     onClick={() => handleClick("Cancelled")}
-                    className="w-full bg-white text-red-900 py-2.5 rounded-lg font-semibold border border-red-200 shadow-sm hover:bg-red-50 transition"
+                    className="w-full bg-red-100 text-red-700 py-2.5 rounded-lg font-semibold hover:bg-red-200 transition"
                 >
                     Cancel
                 </button>

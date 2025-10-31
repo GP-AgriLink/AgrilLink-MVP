@@ -1,5 +1,4 @@
 // client/components/Order/IncomingOrders.jsx
-
 import { useState } from "react";
 import OrderCard from "./OrderCard";
 
@@ -26,7 +25,9 @@ const IncomingOrders = ({ orders, onOrderUpdate }) => {
     return (
         <section className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-center sm:text-left">
-                <h2 className="text-2xl md:text-3xl font-semibold text-gray-800">Incoming Orders</h2>
+                <h2 className="text-2xl md:text-3xl font-semibold text-gray-800">
+                    Incoming Orders
+                </h2>
                 <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-medium">
                     {orders.length} Active
                 </span>
@@ -35,11 +36,15 @@ const IncomingOrders = ({ orders, onOrderUpdate }) => {
             {orders.length > 0 ? (
                 <>
                     <div
-                        className={`grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"
+                        className={`grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 3xl:grid-cols-2 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"
                             }`}
                     >
                         {currentOrders.map((order) => (
-                            <OrderCard key={order.id} order={order} onOrderUpdate={onOrderUpdate} />
+                            <OrderCard
+                                key={order.id}
+                                order={order}
+                                onOrderUpdate={onOrderUpdate}
+                            />
                         ))}
                     </div>
 
