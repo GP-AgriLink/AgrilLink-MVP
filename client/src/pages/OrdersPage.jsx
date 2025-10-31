@@ -18,8 +18,6 @@ const OrdersPage = () => {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
-                console.log("API IS :", data);
-
                 const ordersArray = Array.isArray(data)
                     ? data
                     : Array.isArray(data.orders)
@@ -83,7 +81,6 @@ const OrdersPage = () => {
 
             if (newStatus === "Completed" || newStatus === "Cancelled") {
                 setIncomingOrders(prev => prev.filter(o => o.id !== id));
-
                 setPastOrders(prev => {
                     const exists = prev.find(o => o.id === updatedOrder._id);
                     if (exists) return prev;
@@ -122,7 +119,7 @@ const OrdersPage = () => {
     }
 
     return (
-        <div className="min-h-screen md:px-12 lg:px-20">
+        <div className="min-h-screen px-4 sm:px-8 md:px-12 lg:px-20 py-2">
             <div className="max-w-[1400px] mx-auto flex flex-col gap-14">
                 <IncomingOrders orders={incomingOrders} onOrderUpdate={handleOrderUpdate} />
                 <PastOrders orders={pastOrders} />

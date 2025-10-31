@@ -53,18 +53,17 @@ const OrderCard = ({ order, onOrderUpdate }) => {
 
     return (
         <div
-            className={`${cardStyle} shadow-lg rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between border
+            className={`${cardStyle} shadow-lg rounded-2xl p-5 sm:p-6 transition-all duration-300 flex flex-col justify-between border
             ${fadeOut ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}
         >
             <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
                     <p className="text-sm text-gray-500 font-medium">
                         {date
                             ? new Date(date).toLocaleDateString("en-GB", { dateStyle: "medium" })
                             : "Unknown Date"}
                     </p>
-
-                    <span className="bg-green-50 text-green-700 text-sm px-3 py-1 rounded-md font-semibold">
+                    <span className="bg-green-50 text-green-700 text-sm px-3 py-1 rounded-md font-semibold self-start sm:self-auto">
                         Total ${formatNumber(total)}
                     </span>
                 </div>
@@ -79,7 +78,7 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                             : status}
                 </h3>
 
-                <p className="text-gray-700 font-medium pb-2">{customer}</p>
+                <p className="text-gray-700 font-medium pb-1">{customer}</p>
                 <p className="text-sm text-gray-500 mb-4">{phone}</p>
 
                 <div
@@ -92,49 +91,41 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                         Items ({items.length})
                     </p>
 
-                    {items.map((item, index) => {
-                        const formattedItem = {
-                            name: item.name || "Unknown Item",
-                            qty: item.qty,
-                            price: item.price,
-                        };
-
-                        return (
-                            <div
-                                key={index}
-                                className="flex justify-between text-sm text-gray-600 py-1 border-b border-gray-100 last:border-none"
-                            >
-                                <div className="flex flex-col text-left">
-                                    <span className="font-medium">{formattedItem.name}</span>
-                                    <span className="text-xs text-gray-500">
-                                        {formattedItem.qty} pcs × ${formatNumber(formattedItem.price)}
-                                    </span>
-                                </div>
-                                <span className="font-semibold text-gray-700">
-                                    ${formatNumber(formattedItem.qty * formattedItem.price)}
+                    {items.map((item, index) => (
+                        <div
+                            key={index}
+                            className="flex justify-between text-sm text-gray-600 py-1 border-b border-gray-100 last:border-none"
+                        >
+                            <div className="flex flex-col text-left">
+                                <span className="font-medium">{item.name}</span>
+                                <span className="text-xs text-gray-500">
+                                    {item.qty} pcs × ${formatNumber(item.price)}
                                 </span>
                             </div>
-                        );
-                    })}
+                            <span className="font-semibold text-gray-700">
+                                ${formatNumber(item.qty * item.price)}
+                            </span>
+                        </div>
+                    ))}
                 </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
                 <button
                     onClick={() => handleClick("Completed")}
-                    className="w-full bg-white text-[#0EB17C] py-2.5 rounded-lg font-semibold border border-[#0EB17C] shadow-md hover:bg-[#0EB17C] hover:text-white transition"
+                    className="w-full bg-white text-[#0EB17C] py-2.5 rounded-lg font-semibold border border-[#0EB17C] shadow-sm hover:bg-[#0EB17C] hover:text-white transition"
                 >
                     Complete
                 </button>
                 <button
                     onClick={() => handleClick("Delivery")}
-                    className="w-full bg-[#13C191] text-white py-2.5 rounded-lg font-semibold border border-[#13C191] shadow-md hover:bg-white hover:text-[#13C191] transition"
+                    className="w-full bg-[#13C191] text-white py-2.5 rounded-lg font-semibold border border-[#13C191] shadow-sm hover:bg-white hover:text-[#13C191] transition"
                 >
                     Delivery
                 </button>
                 <button
                     onClick={() => handleClick("Cancelled")}
-                    className="w-full bg-white text-red-900 py-2.5 rounded-lg font-semibold border border-red-100 shadow-md hover:bg-red-100 transition"
+                    className="w-full bg-white text-red-900 py-2.5 rounded-lg font-semibold border border-red-200 shadow-sm hover:bg-red-50 transition"
                 >
                     Cancel
                 </button>

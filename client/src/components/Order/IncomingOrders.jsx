@@ -25,8 +25,8 @@ const IncomingOrders = ({ orders, onOrderUpdate }) => {
 
     return (
         <section className="space-y-8">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <h2 className="text-3xl font-semibold text-gray-800">Incoming Orders</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-center sm:text-left">
+                <h2 className="text-2xl md:text-3xl font-semibold text-gray-800">Incoming Orders</h2>
                 <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-medium">
                     {orders.length} Active
                 </span>
@@ -35,7 +35,7 @@ const IncomingOrders = ({ orders, onOrderUpdate }) => {
             {orders.length > 0 ? (
                 <>
                     <div
-                        className={`grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"
+                        className={`grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"
                             }`}
                     >
                         {currentOrders.map((order) => (
@@ -44,7 +44,7 @@ const IncomingOrders = ({ orders, onOrderUpdate }) => {
                     </div>
 
                     {totalPages > 1 && (
-                        <div className="flex justify-center mt-6 gap-3">
+                        <div className="flex justify-center flex-wrap mt-6 gap-3">
                             {Array.from({ length: totalPages }, (_, idx) => (
                                 <button
                                     key={idx}
@@ -61,14 +61,14 @@ const IncomingOrders = ({ orders, onOrderUpdate }) => {
                     )}
                 </>
             ) : (
-                <div className="flex flex-col items-center justify-center py-5 text-center">
-                    <div className="bg-emerald-50 pb-8 rounded-xl shadow-sm w-full max-w-md">
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <div className="bg-emerald-50 p-8 rounded-xl shadow-sm w-full max-w-md">
                         <img
                             src="../../../public/noOrder_4.svg"
                             alt="No orders"
-                            className="w-[400px] mx-auto opacity-90 object-contain"
+                            className="w-[280px] sm:w-[350px] mx-auto opacity-90 object-contain"
                         />
-                        <p className="text-lg font-semibold text-emerald-700">
+                        <p className="text-lg font-semibold text-emerald-700 mt-4">
                             No Orders Right Now.
                         </p>
                         <p className="text-sm text-gray-500 mt-2">
