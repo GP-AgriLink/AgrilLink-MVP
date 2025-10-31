@@ -12,9 +12,6 @@ import ForgotPasswordFlow from './pages/ForgotPasswordFlow';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import NotFound from './pages/NotFound';
 import Dashboard from './pages/Dashboard';
-import CartPage from './pages/CartPage' // <-- الـ Import بتاعك سليم
-
-
 
 function App() {
   return (
@@ -103,13 +100,13 @@ function App() {
                 <EditProfile />
               </ProtectedRoute>
             } />
-            
-            {/* --- التعديل هنا --- */}
-            <Route path="/cart" element={<CartPage />} />
-            {/* --- نهاية التعديل --- */}
+            <Route path="/cart" element={
+              <div className="container mx-auto px-6 py-12">
+                <h1 className="text-4xl font-bold text-gray-900">Shopping Cart</h1>
+              </div>
+            } />
 
             <Route path="*" element={<NotFound />} />
-            
           </Routes>
         </main>
         <Footer />
