@@ -26,9 +26,11 @@ const OrdersPage = () => {
                         ? data.orders
                         : [];
 
-                const incoming = ordersArray.filter(o => o.status === "Incoming" || o.status === "Ready for Delivery");
+                const incoming = ordersArray.filter(
+                    o => o.status === "Incoming" || o.status === "Ready for Delivery"
+                );
                 const past = ordersArray.filter(
-                    o => o.status === "Completed" || o.status === "Canceled"
+                    o => o.status === "Completed" || o.status === "Cancelled"
                 );
 
                 setIncomingOrders(
@@ -57,11 +59,7 @@ const OrdersPage = () => {
                         customer: o.customerName,
                         total: o.totalAmount,
                         status: o.status,
-                        date: new Date(o.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                        }),
+                        date: o.updatedAt || o.createdAt,
                     }))
                 );
             } catch (err) {
@@ -83,23 +81,23 @@ const OrdersPage = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            if (newStatus === "Completed" || newStatus === "Canceled") {
+            if (newStatus === "Completed" || newStatus === "Cancelled") {
                 setIncomingOrders(prev => prev.filter(o => o.id !== id));
 
-                setPastOrders(prev => [
-                    ...prev,
-                    {
-                        id: updatedOrder._id,
-                        customer: updatedOrder.customerName,
-                        total: updatedOrder.totalAmount,
-                        status: updatedOrder.status,
-                        date: new Date(updatedOrder.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                        }),
-                    },
-                ]);
+                setPastOrders(prev => {
+                    const exists = prev.find(o => o.id === updatedOrder._id);
+                    if (exists) return prev;
+                    return [
+                        ...prev,
+                        {
+                            id: updatedOrder._id,
+                            customer: updatedOrder.customerName,
+                            total: updatedOrder.totalAmount,
+                            status: updatedOrder.status,
+                            date: updatedOrder.updatedAt || updatedOrder.createdAt,
+                        },
+                    ];
+                });
             } else {
                 setIncomingOrders(prev =>
                     prev.map(o =>

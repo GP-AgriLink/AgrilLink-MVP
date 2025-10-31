@@ -1,6 +1,28 @@
+// client/components/Order/IncomingOrders.jsx
+
+import { useState } from "react";
 import OrderCard from "./OrderCard";
 
+const ITEMS_PER_PAGE = 6;
+
 const IncomingOrders = ({ orders, onOrderUpdate }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [fade, setFade] = useState(false);
+
+    const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
+
+    const handlePageChange = (page) => {
+        if (page === currentPage) return;
+        setFade(true);
+        setTimeout(() => {
+            setCurrentPage(page);
+            setFade(false);
+        }, 300);
+    };
+
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const currentOrders = orders.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
     return (
         <section className="space-y-8">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -11,11 +33,33 @@ const IncomingOrders = ({ orders, onOrderUpdate }) => {
             </div>
 
             {orders.length > 0 ? (
-                <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-                    {orders.map((order) => (
-                        <OrderCard key={order.id} order={order} onOrderUpdate={onOrderUpdate} />
-                    ))}
-                </div>
+                <>
+                    <div
+                        className={`grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 transition-opacity duration-300 ${fade ? "opacity-0" : "opacity-100"
+                            }`}
+                    >
+                        {currentOrders.map((order) => (
+                            <OrderCard key={order.id} order={order} onOrderUpdate={onOrderUpdate} />
+                        ))}
+                    </div>
+
+                    {totalPages > 1 && (
+                        <div className="flex justify-center mt-6 gap-3">
+                            {Array.from({ length: totalPages }, (_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handlePageChange(idx + 1)}
+                                    className={`px-4 py-2 rounded-md font-semibold transition ${currentPage === idx + 1
+                                        ? "bg-[#13C191] text-white"
+                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                        }`}
+                                >
+                                    {idx + 1}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </>
             ) : (
                 <div className="flex flex-col items-center justify-center py-5 text-center">
                     <div className="bg-emerald-50 pb-8 rounded-xl shadow-sm w-full max-w-md">

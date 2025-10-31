@@ -1,4 +1,4 @@
-// client/pages/OrderCard.jsx
+// client/components/Order/OrderCard.jsx
 
 import { useState, useEffect } from "react";
 
@@ -10,7 +10,6 @@ const OrderCard = ({ order, onOrderUpdate }) => {
     const [status, setStatus] = useState(initialStatus);
 
     useEffect(() => {
-        // لو حصل refresh أو تغير في props، نخلي الكارد يعكس الحالة الحقيقية من الباك
         if (orderData.status === "Ready for Delivery") setStatus("Delivery");
         else setStatus(orderData.status);
     }, [orderData.status]);
@@ -57,14 +56,11 @@ const OrderCard = ({ order, onOrderUpdate }) => {
             className={`${cardStyle} shadow-lg rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between border
             ${fadeOut ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}
         >
-            {/* Header */}
             <div>
                 <div className="flex items-center justify-between mb-3">
                     <p className="text-sm text-gray-500 font-medium">
                         {date
-                            ? new Date(date).toLocaleDateString("en-GB", {
-                                dateStyle: "medium",
-                            })
+                            ? new Date(date).toLocaleDateString("en-GB", { dateStyle: "medium" })
                             : "Unknown Date"}
                     </p>
 
@@ -74,8 +70,7 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                 </div>
 
                 <h3
-                    className={`font-semibold text-left text-lg mb-1 ${status === "Delivery" ? "text-green-700" : "text-gray-800"
-                        }`}
+                    className={`font-semibold text-left text-lg mb-1 ${status === "Delivery" ? "text-green-700" : "text-gray-800"}`}
                 >
                     {status === "Incoming"
                         ? "Incoming Order"
@@ -87,7 +82,6 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                 <p className="text-gray-700 font-medium pb-2">{customer}</p>
                 <p className="text-sm text-gray-500 mb-4">{phone}</p>
 
-                {/* Items */}
                 <div
                     className={`${status === "Delivery"
                         ? "bg-gray-100 border-green-200"
@@ -125,7 +119,6 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                 </div>
             </div>
 
-            {/* Buttons */}
             <div className="flex gap-3">
                 <button
                     onClick={() => handleClick("Completed")}
@@ -140,7 +133,7 @@ const OrderCard = ({ order, onOrderUpdate }) => {
                     Delivery
                 </button>
                 <button
-                    onClick={() => handleClick("Canceled")}
+                    onClick={() => handleClick("Cancelled")}
                     className="w-full bg-white text-red-900 py-2.5 rounded-lg font-semibold border border-red-100 shadow-md hover:bg-red-100 transition"
                 >
                     Cancel
