@@ -1,5 +1,4 @@
 // client/pages/OrdersPage.jsx
-
 import { useState, useEffect } from "react";
 import axios from "axios";
 import IncomingOrders from "../components/Order/IncomingOrders";
@@ -18,8 +17,6 @@ const OrdersPage = () => {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
-                console.log("API IS :", data);
-
                 const ordersArray = Array.isArray(data)
                     ? data
                     : Array.isArray(data.orders)
@@ -27,19 +24,19 @@ const OrdersPage = () => {
                         : [];
 
                 const incoming = ordersArray.filter(
-                    o => o.status === "Incoming" || o.status === "Ready for Delivery"
+                    (o) => o.status === "Incoming" || o.status === "Ready for Delivery"
                 );
                 const past = ordersArray.filter(
-                    o => o.status === "Completed" || o.status === "Cancelled"
+                    (o) => o.status === "Completed" || o.status === "Cancelled"
                 );
 
                 setIncomingOrders(
-                    incoming.map(o => ({
+                    incoming.map((o) => ({
                         id: o._id,
                         customer: o.customerName,
                         phone: o.customerPhone || "N/A",
                         total: o.totalAmount,
-                        items: o.orderItems.map(i => ({
+                        items: o.orderItems.map((i) => ({
                             name: i.name,
                             qty: i.quantity,
                             price: i.unitPrice,
@@ -54,7 +51,7 @@ const OrdersPage = () => {
                 );
 
                 setPastOrders(
-                    past.map(o => ({
+                    past.map((o) => ({
                         id: o._id,
                         customer: o.customerName,
                         total: o.totalAmount,
@@ -82,10 +79,9 @@ const OrdersPage = () => {
             );
 
             if (newStatus === "Completed" || newStatus === "Cancelled") {
-                setIncomingOrders(prev => prev.filter(o => o.id !== id));
-
-                setPastOrders(prev => {
-                    const exists = prev.find(o => o.id === updatedOrder._id);
+                setIncomingOrders((prev) => prev.filter((o) => o.id !== id));
+                setPastOrders((prev) => {
+                    const exists = prev.find((o) => o.id === updatedOrder._id);
                     if (exists) return prev;
                     return [
                         ...prev,
@@ -99,10 +95,14 @@ const OrdersPage = () => {
                     ];
                 });
             } else {
-                setIncomingOrders(prev =>
-                    prev.map(o =>
+                setIncomingOrders((prev) =>
+                    prev.map((o) =>
                         o.id === id
-                            ? { ...o, status: newStatus === "Ready for Delivery" ? "Delivery" : newStatus }
+                            ? {
+                                ...o,
+                                status:
+                                    newStatus === "Ready for Delivery" ? "Delivery" : newStatus,
+                            }
                             : o
                     )
                 );
@@ -122,8 +122,8 @@ const OrdersPage = () => {
     }
 
     return (
-        <div className="min-h-screen md:px-12 lg:px-20">
-            <div className="max-w-[1400px] mx-auto flex flex-col gap-14">
+        <div className="min-h-screen px-4 sm:px-8 md:px-12 lg:px-20 xl:px-16 2xl:px-8 3xl:px-8 py-2">
+            <div className="max-w-[1600px] mx-auto flex flex-col gap-12">
                 <IncomingOrders orders={incomingOrders} onOrderUpdate={handleOrderUpdate} />
                 <PastOrders orders={pastOrders} />
             </div>
