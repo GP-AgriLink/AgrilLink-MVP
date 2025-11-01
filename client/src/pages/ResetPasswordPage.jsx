@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import Logo from '../components/common/Logo';
 
-import { sanitizeString } from '../utils/validation';
+import { sanitizeString } from '../utils/sanitizers';
 
 const validationSchema = Yup.object({
   password: Yup.string()
@@ -69,8 +69,6 @@ export default function ResetPasswordPage() {
         navigate('/login');
       }, 3000);
     } catch (err) {
-      console.error('Reset password error:', err);
-
       if (err.response?.status === 400) {
         toast.error("Password reset link has expired. Please request a new one", {
           position: "top-right",
