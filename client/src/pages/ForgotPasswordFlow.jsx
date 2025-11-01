@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 
 import ForgotPasswordStep from "../components/ForgetPassword/ForgotPasswordStep";
 import CheckEmailStep from "../components/ForgetPassword/CheckEmailStep";
-import { sanitizeEmail } from "../utils/validation";
+import { sanitizeEmail } from "../utils/sanitizers";
 
 export default function ForgotPasswordFlow() {
   const [step, setStep] = useState(1);
@@ -39,8 +39,6 @@ export default function ForgotPasswordFlow() {
         autoClose: 4000,
       });
     } catch (err) {
-      console.error("Forgot password error:", err);
-      
       setEmail(sanitizeEmail(userEmail));
       setStep(2);
       
@@ -68,8 +66,6 @@ export default function ForgotPasswordFlow() {
         autoClose: 4000,
       });
     } catch (err) {
-      console.error("Resend error:", err);
-      
       toast.info("If this email is registered, you will receive a password reset link", {
         position: "top-right",
         autoClose: 4000,
