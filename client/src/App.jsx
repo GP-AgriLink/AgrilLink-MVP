@@ -1,17 +1,18 @@
-import { Routes, Route, Link } from 'react-router-dom'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import { AuthProvider } from './context/AuthContext'
-import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
-import Navbar from './components/Navbar/Navbar'
-import Footer from './components/Footer/Footer'
-import FarmerSignup from './pages/FarmRegister'
-import FarmerLogin from './pages/FarmLogin'
-import EditProfile from './pages/EditProfile';
-import ForgotPasswordFlow from './pages/ForgotPasswordFlow';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import NotFound from './pages/NotFound';
-import Dashboard from './pages/Dashboard';
+import { Routes, Route, Link } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+import Navbar from "./components/Navbar/Navbar";
+import Footer from "./components/Footer/Footer";
+import FarmerSignup from "./pages/FarmRegister";
+import FarmerLogin from "./pages/FarmLogin";
+import EditProfile from "./pages/EditProfile";
+import ForgotPasswordFlow from "./pages/ForgotPasswordFlow";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import NotFound from "./pages/NotFound";
+import Dashboard from "./pages/Dashboard";
+import Slider from "./components/product/slider";
 
 function App() {
   return (
@@ -64,27 +65,51 @@ function App() {
                 </div>
               }
             />
-            <Route path="/about" element={
-              <div className="container mx-auto px-6 py-12">
-                <h1 className="text-4xl font-bold text-gray-900">About Page</h1>
-              </div>
-            } />
-            <Route path="/contact" element={
-              <div className="container mx-auto px-6 py-12">
-                <h1 className="text-4xl font-bold text-gray-900">Contact Page</h1>
-              </div>
-            } />
-            <Route path="/discover" element={
-              <div className="container mx-auto px-6 py-12">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">Discover Farms</h1>
-                <p className="text-lg text-gray-700">Browse and discover local farms in your area.</p>
-              </div>
-            } />
+
+            <Route path="/slider" element={<Slider />} />
+            {/* Slider demo routes (supports optional farmId param) */}
+            <Route path="/slider/:farmId" element={<Slider />} />
+            <Route
+              path="/about"
+              element={
+                <div className="container mx-auto px-6 py-12">
+                  <h1 className="text-4xl font-bold text-gray-900">
+                    About Page
+                  </h1>
+                </div>
+              }
+            />
+            <Route
+              path="/contact"
+              element={
+                <div className="container mx-auto px-6 py-12">
+                  <h1 className="text-4xl font-bold text-gray-900">
+                    Contact Page
+                  </h1>
+                </div>
+              }
+            />
+            <Route
+              path="/discover"
+              element={
+                <div className="container mx-auto px-6 py-12">
+                  <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                    Discover Farms
+                  </h1>
+                  <p className="text-lg text-gray-700">
+                    Browse and discover local farms in your area.
+                  </p>
+                </div>
+              }
+            />
 
             <Route path="/login" element={<FarmerLogin />} />
             <Route path="/register" element={<FarmerSignup />} />
             <Route path="/forgot-password" element={<ForgotPasswordFlow />} />
-            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPasswordPage />}
+            />
 
             <Route
               path="/dashboard"
@@ -95,16 +120,24 @@ function App() {
               }
             />
 
-            <Route path="/edit-profile" element={
-              <ProtectedRoute>
-                <EditProfile />
-              </ProtectedRoute>
-            } />
-            <Route path="/cart" element={
-              <div className="container mx-auto px-6 py-12">
-                <h1 className="text-4xl font-bold text-gray-900">Shopping Cart</h1>
-              </div>
-            } />
+            <Route
+              path="/edit-profile"
+              element={
+                <ProtectedRoute>
+                  <EditProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cart"
+              element={
+                <div className="container mx-auto px-6 py-12">
+                  <h1 className="text-4xl font-bold text-gray-900">
+                    Shopping Cart
+                  </h1>
+                </div>
+              }
+            />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -112,7 +145,7 @@ function App() {
         <Footer />
       </div>
     </AuthProvider>
-  )
+  );
 }
 
 export default App;
