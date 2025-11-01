@@ -12,7 +12,7 @@ import ForgotPasswordFlow from './pages/ForgotPasswordFlow';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import NotFound from './pages/NotFound';
 import Dashboard from './pages/Dashboard';
-
+import CartPage from './pages/CartPage'; 
 function App() {
   return (
     <AuthProvider>
@@ -100,11 +100,8 @@ function App() {
                 <EditProfile />
               </ProtectedRoute>
             } />
-            <Route path="/cart" element={
-              <div className="container mx-auto px-6 py-12">
-                <h1 className="text-4xl font-bold text-gray-900">Shopping Cart</h1>
-              </div>
-            } />
+            
+            <Route path="/cart" element={<CartPage />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
