@@ -3,7 +3,8 @@ import {useAuth} from "../../context/AuthContext";
 import InputField from "./InputField";
 import Logo from "../common/Logo";
 import {Formik, Form} from "formik";
-import {registrationValidationSchema, sanitizeName, sanitizeEmail} from "../../utils/validation";
+import {registrationValidationSchema} from "../../utils/validationSchemas";
+import {sanitizeName, sanitizeEmail} from "../../utils/sanitizers";
 
 const SignupForm = () => {
   const navigate = useNavigate();

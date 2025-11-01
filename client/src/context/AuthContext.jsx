@@ -34,7 +34,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const handleStorageChange = (e) => {
       if ((e.key === 'user' || e.key === 'token') && !e.newValue) {
-        console.log('Auth data deleted from localStorage, clearing state');
         authService.clearAuthData();
         setUser(null);
       }
@@ -47,7 +46,6 @@ export const AuthProvider = ({ children }) => {
       const token = authService.getAuthToken();
       
       if (user && (!currentUser || !token)) {
-        console.log('Auth data manually deleted, clearing state');
         authService.clearAuthData();
         setUser(null);
       }

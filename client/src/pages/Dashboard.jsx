@@ -1,29 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import ProfileHeader from '../components/Profile/ProfileHeader';
-import ProfileForm from '../components/Profile/ProfileForm';
-import AvatarUpload from '../components/Profile/AvatarUpload';
-import { getProfile } from '../services/profileApi';
-import { getAuthToken, clearAuthData } from '../context/AuthContext';
 import OrdersPage from './OrdersPage';
+import MyProductsPage from './FarmProductsPage';
+import ProfilePage from './ProfilePage';
+import AddProduct from '../components/FarmProduct/AddProduct';
+import EditProduct from '../components/FarmProduct/EditProduct';
+import { createProduct, updateProduct } from '../services/farmProductApi';
 
-const getDefaultProfile = () => ({
-  id: "",
-  firstName: "",
-  lastName: "",
-  email: "",
-  farmName: "",
-  phoneNumber: "",
-  farmBio: "",
-  location: {
-    type: "Point",
-    coordinates: [30.0444, 31.2357],
-  },
-  specialties: [],
-  avatarUrl: "",
-});
-
-function Dashboard() {
+const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeComponent, setActiveComponent] = useState(() => {
@@ -32,11 +16,11 @@ function Dashboard() {
     }
     return localStorage.getItem('dashboardActiveView') || 'profile';
   });
-  const [profile, setProfile] = useState(getDefaultProfile());
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
   const lastNavStateRef = useRef(null);
+  
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [isEditProductOpen, setIsEditProductOpen] = useState(false);
+  const [productToEdit, setProductToEdit] = useState(null);
 
   useEffect(() => {
     if (location.state?.activeView && location.state.activeView !== lastNavStateRef.current) {
@@ -64,54 +48,44 @@ function Dashboard() {
     localStorage.setItem('dashboardActiveView', activeComponent);
   }, [activeComponent]);
 
-  useEffect(() => {
-    if (activeComponent === 'profile') {
-      fetchProfile();
-    }
-  }, [activeComponent]);
+  const handleAddProduct = () => {
+    setIsAddProductOpen(true);
+  };
 
-  const fetchProfile = async () => {
-    setLoading(true);
-    setError(null);
+  const handleEditProduct = (product) => {
+    setProductToEdit(product);
+    setIsEditProductOpen(true);
+  };
 
+  const handleAddProductSubmit = async (productData) => {
     try {
-      const token = getAuthToken();
-
-      if (!token) {
-        clearAuthData();
-        navigate("/login");
-        return;
+      await createProduct(productData);
+      setIsAddProductOpen(false);
+      if (window.refreshProducts) {
+        window.refreshProducts();
       }
-
-      const data = await getProfile();
-
-      if (data) {
-        const profileData = {
-          ...getDefaultProfile(),
-          ...data,
-          location: data.location || getDefaultProfile().location,
-          specialties: Array.isArray(data.specialties) ? data.specialties : [],
-        };
-
-        setProfile(profileData);
-        setImagePreview(profileData.avatarUrl || "");
-      }
-    } catch (err) {
-      console.error("Error fetching profile:", err);
-      const errorMsg = err.response?.data?.message || "Failed to fetch profile";
-      setError(errorMsg);
-
-      if (err.response?.status === 401) {
-        clearAuthData();
-        navigate("/login");
-      }
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Failed to create product:', error);
+      throw error;
     }
   };
 
-  const handleEditClick = () => {
-    navigate("/edit-profile");
+  const handleEditProductSubmit = async (productData) => {
+    try {
+      if (!productToEdit?._id && !productToEdit?.id) {
+        throw new Error('Product ID is missing');
+      }
+      const productId = productToEdit._id || productToEdit.id;
+      await updateProduct(productId, productData);
+      setIsEditProductOpen(false);
+      setProductToEdit(null);
+      if (window.refreshProducts) {
+        window.refreshProducts();
+      }
+    } catch (error) {
+      console.error('Failed to update product:', error);
+      throw error;
+    }
   };
 
   const menuItems = [
@@ -120,76 +94,35 @@ function Dashboard() {
     { id: 'profile', label: 'My Profile', icon: 'profile' },
   ];
 
-  const MyOrders = () => (
-    <div className="text-center py-12 min-h-[400px] flex flex-col" >
-      <OrdersPage />
-    </div>
-  );
-
-  const MyProducts = () => (
-    <div className="text-center py-12 px-6 min-h-[400px] flex flex-col items-center justify-center">
-      <div className="text-6xl mb-4">🌾</div>
-      <h2 className="text-2xl font-bold text-emerald-900 mb-2">My Products</h2>
-      <p className="text-gray-600">Products component coming soon...</p>
-    </div>
-  );
-
-  const MyProfile = () => {
-    if (loading) {
-      return (
-        <div className="flex items-center justify-center py-12 px-6 min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent" />
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="text-center py-12 px-6 min-h-[400px] flex flex-col items-center justify-center">
-          <div className="text-red-500">
-            <p>{error}</p>
-            <button
-              onClick={fetchProfile}
-              className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div>
-        <ProfileHeader isEditing={false} onEditClick={handleEditClick} />
-        <div className="p-5 md:p-6">
-          <div className="mb-6 flex justify-center">
-            <AvatarUpload
-              profilePicture={profile.avatarUrl}
-              imagePreview={imagePreview}
-              isEditing={false}
-              onPreviewChange={setImagePreview}
-              onProfileChange={(updatedProfile) =>
-                setProfile((prev) => ({ ...prev, ...updatedProfile }))
-              }
-            />
-          </div>
-          <ProfileForm profile={profile} isEditing={false} />
-        </div>
-      </div>
-    );
-  };
-
   const renderActiveComponent = () => {
     switch (activeComponent) {
       case 'orders':
-        return <MyOrders />;
+        return (
+          <div className="text-center py-12 min-h-[400px] flex flex-col">
+            <OrdersPage />
+          </div>
+        );
       case 'products':
-        return <MyProducts />;
+        return (
+          <div className="text-center py-12 min-h-[400px]">
+            <MyProductsPage 
+              onEdit={handleEditProduct}
+              onAddNew={handleAddProduct}
+            />
+          </div>
+        );
       case 'profile':
-        return <MyProfile />;
+        return (
+          <div className="text-center py-12 min-h-[400px] flex flex-col">
+            <ProfilePage />
+          </div>
+        );
       default:
-        return <MyOrders />;
+        return (
+          <div className="text-center py-12 min-h-[400px] flex flex-col">
+            <OrdersPage />
+          </div>
+        );
     }
   };
 
@@ -256,6 +189,23 @@ function Dashboard() {
           </main>
         </div>
       </div>
+
+      {/* Product Modals */}
+      <AddProduct
+        isOpen={isAddProductOpen}
+        onClose={() => setIsAddProductOpen(false)}
+        onSubmit={handleAddProductSubmit}
+      />
+      
+      <EditProduct
+        isOpen={isEditProductOpen}
+        onClose={() => {
+          setIsEditProductOpen(false);
+          setProductToEdit(null);
+        }}
+        onSubmit={handleEditProductSubmit}
+        product={productToEdit}
+      />
     </div>
   );
 }

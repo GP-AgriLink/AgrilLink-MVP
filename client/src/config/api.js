@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getAuthToken, clearAuthData } from '../services/authService';
-import { sanitizeFormData } from '../utils/validation';
+import { sanitizeFormData } from '../utils/sanitizers';
 
 export const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:5000';
 
@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
   },
   products: {
     list: '/api/products',
+    myProducts: '/api/products/myproducts',
     create: '/api/products',
     update: '/api/products',
     base: '/api/products',
@@ -54,13 +55,12 @@ apiClient.interceptors.request.use(
       config.data = sanitizeFormData(config.data);
     }
 
-    // Clean up internal headers
     delete config.headers['X-Skip-Sanitization'];
 
     return config;
   },
   (error) => {
-    console.error('Request interceptor error:', error);
+    console.error('API request interceptor failed:', error);
     return Promise.reject(error);
   }
 );
@@ -71,7 +71,7 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
 
     if (status === 401) {
-      console.warn('Authentication failed: Session expired or invalid token');
+      console.warn('Unauthorized: Session expired or invalid token');
       clearAuthData();
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
@@ -79,11 +79,11 @@ apiClient.interceptors.response.use(
     }
 
     if (status === 403) {
-      console.error('Authorization failed: Access forbidden');
+      console.error('Forbidden: Insufficient permissions');
     }
 
     if (status && status >= 500) {
-      console.error('Server error:', error.response?.data || 'Internal server error');
+      console.error('Server error:', error.response?.data?.message || 'Internal server error');
     }
 
     if (!error.response) {
