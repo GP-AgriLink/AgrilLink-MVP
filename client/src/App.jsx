@@ -14,7 +14,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import FarmStorePage from "./pages/FarmStorePage";
-import Slider from "./components/product/slider";
+import Slider from "./components/FarmStore/slider";
 
 function App() {
   return (
@@ -68,9 +68,9 @@ function App() {
               }
             />
 
-            <Route path="/slider" element={<Slider />} />
+            {/* <Route path="/slider" element={<Slider />} /> */}
             {/* Slider demo routes (supports optional farmId param) */}
-            <Route path="/slider/:farmId" element={<Slider />} />
+            {/* <Route path="/slider/:farmId" element={<Slider />} /> */}
 
             <Route
               path="/about"
@@ -145,10 +145,10 @@ function App() {
             <Route path="/farm/:id" element={<FarmStorePage />} />
 
             {/* Example: Redirect from base path to a default farm */}
-            <Route
+            {/* <Route
               path="/"
               element={<Navigate to="/farm/sunrise-orchard" replace />}
-            />
+            /> */}
 
             <Route path="*" element={<NotFound />} />
           </Routes>
