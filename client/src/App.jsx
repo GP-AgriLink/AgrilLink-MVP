@@ -2,6 +2,7 @@ import {Routes, Route, Link, Navigate} from "react-router-dom";
 import {ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {AuthProvider} from "./context/AuthContext";
+
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
@@ -13,6 +14,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import FarmStorePage from "./pages/FarmStorePage";
+import Slider from "./components/product/slider";
 
 function App() {
   return (
@@ -65,6 +67,11 @@ function App() {
                 </div>
               }
             />
+
+            <Route path="/slider" element={<Slider />} />
+            {/* Slider demo routes (supports optional farmId param) */}
+            <Route path="/slider/:farmId" element={<Slider />} />
+
             <Route
               path="/about"
               element={
@@ -134,6 +141,7 @@ function App() {
                 </div>
               }
             />
+
             <Route path="/farm/:id" element={<FarmStorePage />} />
 
             {/* Example: Redirect from base path to a default farm */}
